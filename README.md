@@ -44,7 +44,7 @@ git push -u origin main
 2. 选 GitHub 仓库 `prototype-overview`
 3. Framework Preset 选 `Other`
 4. 点击 Deploy
-5. 部署完会得到一个固定地址，例如：`https://prototype-overview.vercel.app`
+5. 部署完会得到一个固定地址，例如：`https://zhongwenlu-yx.vercel.app`
 
 ### 4. 把地址加到 README
 
@@ -149,7 +149,7 @@ git push -u origin main
 
 ## 📦 部署地址
 
-- **线上地址**：https://zhongwenlu-yx-prototype.vercel.app
+- **线上地址**：https://zhongwenlu-yx.vercel.app
 - **GitHub 仓库**：https://github.com/Lynnlgh0824/zhongwenlu-yx
 
 ---
