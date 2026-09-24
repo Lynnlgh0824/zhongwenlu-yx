@@ -1,0 +1,111 @@
+{
+  "meta": {
+    "title": "中文路 · 产品原型总览",
+    "subtitle": "Product Prototype Overview · 产品经理维护",
+    "updatedAt": "2026-09-24",
+    "owner": "PM",
+    "version": "1.0"
+  },
+  "stats": {
+    "inProgress": 4,
+    "review": 1,
+    "delivered": 12,
+    "archived": 8
+  },
+  "tags": [
+    { "id": "B端", "color": "blue" },
+    { "id": "C端", "color": "pink" },
+    { "id": "AI整理", "color": "purple" },
+    { "id": "学校", "color": "cyan" },
+    { "id": "会员", "color": "amber" },
+    { "id": "续费", "color": "amber" },
+    { "id": "财务", "color": "orange" },
+    { "id": "订单", "color": "orange" },
+    { "id": "DSE", "color": "indigo" },
+    { "id": "拖拽", "color": "purple" }
+  ],
+  "groups": [
+    {
+      "id": "2026-09",
+      "title": "2026 年 9 月",
+      "subtitle": "本月迭代 · 进行中",
+      "expanded": true,
+      "color": "blue",
+      "items": [
+        {
+          "id": "REQ-001",
+          "title": "命题作文 - 批量导入",
+          "subtitle": "老师批量上传作文图片，AI 自动分类，拖拽分配",
+          "version": "V0.3",
+          "status": "in-progress",
+          "tags": ["B端", "学校", "AI整理"],
+          "previewUrl": "http://a.localhost:4173/mockup-batch-import.html",
+          "extras": [
+            { "label": "导入弹窗", "url": "http://a.localhost:4173/mockup-import-summary.html" },
+            { "label": "AI 分类", "url": "http://a.localhost:4173/mockup-ai-classify.html" }
+          ],
+          "branch": "explore/REQ-001-batch-import",
+          "updatedAt": "2026-09-24"
+        },
+        {
+          "id": "REQ-VIP-001",
+          "title": "黄金会员续费",
+          "subtitle": "线下会员续费全流程，含财务审核 + 学员确认",
+          "version": "V0.1",
+          "status": "review",
+          "tags": ["C端", "会员", "续费"],
+          "previewUrl": "#",
+          "extras": [],
+          "branch": "feature/REQ-VIP-001-v0.1",
+          "updatedAt": "2026-09-17"
+        },
+        {
+          "id": "REQ-002",
+          "title": "AI 智能分类 · 拖拽分配",
+          "subtitle": "作文图片 AI 自动分类，老师拖拽分配到学生",
+          "version": "V0.1",
+          "status": "in-progress",
+          "tags": ["B端", "AI整理", "拖拽"],
+          "previewUrl": "http://a.localhost:4173/mockup-ai-classify.html",
+          "extras": [],
+          "branch": "explore/REQ-AI-classify",
+          "updatedAt": "2026-09-24"
+        },
+        {
+          "id": "REQ-003",
+          "title": "DSE 作文批改",
+          "subtitle": "香港 DSE 考试作文 AI 评分",
+          "version": "V0.0",
+          "status": "designing",
+          "tags": ["B端", "学校", "DSE"],
+          "previewUrl": "#",
+          "extras": [],
+          "branch": "",
+          "updatedAt": "2026-09-10"
+        }
+      ]
+    },
+    {
+      "id": "2026-08",
+      "title": "2026 年 8 月",
+      "subtitle": "已交付 · 历史归档可查",
+      "expanded": false,
+      "color": "green",
+      "items": [
+        {
+          "id": "REQ-XYZ-001",
+          "title": "订单全链路",
+          "subtitle": "线下订单 + 财务审核 + 学员确认",
+          "version": "V1.0",
+          "status": "delivered",
+          "tags": ["B端", "财务", "订单"],
+          "previewUrl": "#",
+          "extras": [],
+          "branch": "main",
+          "deliveredAt": "2026-08-15",
+          "updatedAt": "2026-08-15"
+        }
+      ]
+    }
+  ]
+}

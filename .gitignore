@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node（万一未来加构建）
+node_modules/
+dist/
+
+# Vercel
+.vercel/

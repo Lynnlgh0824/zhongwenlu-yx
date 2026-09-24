@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>中文路 · 产品原型总览</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f4f5f7;
+    color: #1f2937;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* ── 顶部 ── */
+  .topbar {
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 14px 32px;
+    display: flex; align-items: center; gap: 16px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+  .brand .logo {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+  }
+  .brand-text { font-size: 16px; color: #111827; }
+  .brand-sub { font-size: 12px; color: #9ca3af; margin-left: 4px; font-weight: 400; }
+
+  .topbar-tools { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .search-box {
+    display: flex; align-items: center; gap: 6px;
+    width: 280px; height: 34px;
+    background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 0 12px;
+    transition: all .15s;
+  }
+  .search-box:focus-within { background: #fff; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
+  .search-box::before { content: "🔍"; font-size: 12px; opacity: .5; }
+  .search-box input {
+    flex: 1; border: none; background: transparent; outline: none;
+    font-size: 13px; color: #111827;
+  }
+  .search-box input::placeholder { color: #9ca3af; }
+  .tool-btn {
+    height: 34px; padding: 0 12px; border-radius: 8px;
+    background: #fff; border: 1px solid #e5e7eb;
+    color: #374151; font-size: 13px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .tool-btn:hover { background: #f9fafb; }
+  .tool-btn.primary { background: #111827; color: #fff; border-color: #111827; }
+
+  /* ── 主体 ── */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 32px 80px;
+  }
+
+  /* ── 顶部数据条 ── */
+  .stats-row {
+    display: flex; gap: 12px; margin-bottom: 24px;
+  }
+  .stat-card {
+    flex: 1;
+    background: #fff; border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    border: 1px solid #f3f4f6;
+  }
+  .stat-card .label { font-size: 12px; color: #6b7280; margin-bottom: 6px; }
+  .stat-card .value { font-size: 24px; font-weight: 600; color: #111827; }
+  .stat-card.in-progress .value { color: #2563eb; }
+  .stat-card.review .value { color: #f59e0b; }
+  .stat-card.delivered .value { color: #10b981; }
+  .stat-card.archived .value { color: #9ca3af; }
+
+  /* ── 标签筛选 ── */
+  .filter-bar {
+    background: #fff; border-radius: 10px;
+    padding: 12px 16px; margin-bottom: 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .filter-bar .lbl { font-size: 12px; color: #6b7280; margin-right: 4px; }
+  .filter-tag {
+    padding: 4px 10px; border-radius: 999px;
+    background: #f3f4f6; color: #374151;
+    font-size: 12px; cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .filter-tag:hover { background: #e5e7eb; }
+  .filter-tag.active { background: #eef2ff; color: #4338ca; border-color: #c7d2fe; }
+  .filter-clear {
+    margin-left: auto;
+    font-size: 12px; color: #6b7280; cursor: pointer;
+  }
+  .filter-clear:hover { color: #ef4444; }
+
+  /* ── 时间分组（一级菜单） ── */
+  .time-group { margin-bottom: 28px; }
+  .time-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 4px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .time-head:hover .caret { color: #2563eb; }
+  .caret {
+    display: inline-block;
+    color: #9ca3af;
+    transition: transform .2s;
+    font-size: 12px;
+    width: 14px;
+  }
+  .time-group.expanded .caret { transform: rotate(90deg); }
+  .time-title { font-size: 16px; font-weight: 600; color: #111827; }
+  .time-title .badge {
+    font-size: 11px; font-weight: 500;
+    margin-left: 8px; padding: 2px 8px; border-radius: 999px;
+    background: #eef2ff; color: #4338ca;
+    vertical-align: middle;
+  }
+  .time-group.color-blue .time-title .badge { background: #dbeafe; color: #1d4ed8; }
+  .time-group.color-green .time-title .badge { background: #d1fae5; color: #047857; }
+  .time-meta { font-size: 12px; color: #9ca3af; margin-left: auto; }
+
+  .time-body { display: none; padding: 8px 0 0 24px; }
+  .time-group.expanded .time-body { display: grid; }
+
+  /* ── 需求卡片（二级菜单） ── */
+  .req-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 14px;
+  }
+
+  .req-card {
+    background: #fff; border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    padding: 18px;
+    transition: all .15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .req-card:hover {
+    border-color: #c7d2fe;
+    box-shadow: 0 4px 12px rgba(99,102,241,.08);
+    transform: translateY(-1px);
+  }
+  .req-card.status-in-progress { border-top: 3px solid #2563eb; }
+  .req-card.status-review { border-top: 3px solid #f59e0b; }
+  .req-card.status-delivered { border-top: 3px solid #10b981; }
+  .req-card.status-designing { border-top: 3px solid #9ca3af; }
+
+  .req-card-head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px; font-size: 12px;
+  }
+  .req-id {
+    font-family: "SF Mono", Consolas, monospace;
+    color: #6b7280;
+    font-size: 12px;
+  }
+  .req-version {
+    background: #f3f4f6; color: #374151;
+    padding: 1px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 500;
+  }
+  .req-status {
+    margin-left: auto;
+    padding: 2px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 500;
+  }
+  .req-status.in-progress { background: #dbeafe; color: #1d4ed8; }
+  .req-status.in-progress::before { content: "● "; color: #2563eb; }
+  .req-status.review { background: #fef3c7; color: #92400e; }
+  .req-status.review::before { content: "● "; color: #f59e0b; }
+  .req-status.delivered { background: #d1fae5; color: #047857; }
+  .req-status.delivered::before { content: "✓ "; }
+  .req-status.designing { background: #f3f4f6; color: #6b7280; }
+  .req-status.designing::before { content: "○ "; }
+
+  .req-title {
+    font-size: 16px; font-weight: 600;
+    margin: 0 0 6px; color: #111827;
+    line-height: 1.4;
+  }
+  .req-subtitle {
+    font-size: 12px; color: #6b7280;
+    margin: 0 0 12px; line-height: 1.5;
+    min-height: 36px;
+  }
+  .req-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .req-tags .tag {
+    font-size: 11px; padding: 2px 8px; border-radius: 4px;
+    background: #f3f4f6; color: #6b7280;
+  }
+  .req-tags .tag.color-blue { background: #dbeafe; color: #1d4ed8; }
+  .req-tags .tag.color-pink { background: #fce7f3; color: #be185d; }
+  .req-tags .tag.color-purple { background: #ede9fe; color: #6d28d9; }
+  .req-tags .tag.color-cyan { background: #cffafe; color: #0e7490; }
+  .req-tags .tag.color-amber { background: #fef3c7; color: #92400e; }
+  .req-tags .tag.color-orange { background: #ffedd5; color: #c2410c; }
+  .req-tags .tag.color-indigo { background: #e0e7ff; color: #4338ca; }
+
+  .req-actions {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    border-top: 1px dashed #f3f4f6;
+    padding-top: 12px;
+  }
+  .req-link {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 10px; border-radius: 6px;
+    background: #f9fafb; color: #374151;
+    font-size: 12px; text-decoration: none;
+    border: 1px solid #f3f4f6;
+  }
+  .req-link:hover { background: #f3f4f6; color: #111827; }
+  .req-link.primary {
+    background: #2563eb; color: #fff; border-color: #2563eb;
+  }
+  .req-link.primary:hover { background: #1d4ed8; }
+  .req-link.disabled { opacity: .4; pointer-events: none; }
+
+  .req-meta {
+    margin-top: 10px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11px; color: #9ca3af;
+  }
+  .req-meta code {
+    background: #f3f4f6; padding: 1px 6px; border-radius: 4px;
+    font-family: "SF Mono", Consolas, monospace; color: #4b5563;
+  }
+
+  /* ── 空状态 ── */
+  .empty {
+    text-align: center; padding: 60px 20px;
+    color: #9ca3af; font-size: 13px;
+  }
+  .empty-icon { font-size: 32px; margin-bottom: 8px; opacity: .5; }
+
+  /* ── 底部说明 ── */
+  footer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 32px 40px;
+    color: #9ca3af; font-size: 12px;
+    text-align: center;
+  }
+  footer a { color: #6366f1; text-decoration: none; }
+
+  /* ── 提示横幅 ── */
+  .setup-banner {
+    background: linear-gradient(90deg, #fef3c7 0%, #fef9c3 100%);
+    border: 1px solid #fbbf24; border-radius: 10px;
+    padding: 12px 16px; margin-bottom: 20px;
+    font-size: 13px; color: #92400e;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .setup-banner b { color: #78350f; }
+  .setup-banner .close {
+    margin-left: auto; cursor: pointer; color: #92400e;
+    font-size: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="logo">路</div>
+    <span class="brand-text">中文路 · 产品原型总览</span>
+    <span class="brand-sub">Product Prototype Overview</span>
+  </div>
+  <div class="topbar-tools">
+    <div class="search-box">
+      <input id="search" type="search" placeholder="搜索需求标题 / ID / 标签..." />
+    </div>
+    <button class="tool-btn" onclick="location.reload()">↻ 刷新</button>
+    <a class="tool-btn primary" href="#" id="githubLink">GitHub PR ↗</a>
+  </div>
+</div>
+
+<main>
+
+  <div class="setup-banner" id="setupBanner">
+    <span>⚙️</span>
+    <span><b>初始化提示：</b>本页面由 <code style="background:rgba(0,0,0,.06);padding:1px 6px;border-radius:3px;">menu-config.json</code> 自动渲染。产品经理只需编辑该 JSON 并 push 到 git，Vercel 部署后页面自动更新（1-2 分钟）。</span>
+    <span class="close" onclick="document.getElementById('setupBanner').remove()">×</span>
+  </div>
+
+  <div class="stats-row" id="statsRow"></div>
+
+  <div class="filter-bar">
+    <span class="lbl">标签：</span>
+    <div id="filterTags" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+    <span class="filter-clear" onclick="clearFilters()">清除筛选</span>
+  </div>
+
+  <div id="timeline"></div>
+
+</main>
+
+<footer>
+  本页面基于 <code>menu-config.json</code> 渲染 · 最后更新 <span id="updatedAt"></span> · 通过 Git 版本管理
+</footer>
+
+<script>
+const COLORS = {
+  "blue":   { bg: "#dbeafe", fg: "#1d4ed8" },
+  "pink":   { bg: "#fce7f3", fg: "#be185d" },
+  "purple": { bg: "#ede9fe", fg: "#6d28d9" },
+  "cyan":   { bg: "#cffafe", fg: "#0e7490" },
+  "amber":  { bg: "#fef3c7", fg: "#92400e" },
+  "orange": { bg: "#ffedd5", fg: "#c2410c" },
+  "indigo": { bg: "#e0e7ff", fg: "#4338ca" },
+  "green":  { bg: "#d1fae5", fg: "#047857" },
+  "gray":   { bg: "#f3f4f6", fg: "#6b7280" }
+};
+
+const STATUS_LABEL = {
+  "in-progress": "开发中",
+  "review":      "评审中",
+  "delivered":   "已交付",
+  "designing":   "设计中",
+  "archived":    "已归档"
+};
+
+let config = null;
+let activeTags = new Set();
+let searchQuery = "";
+
+async function load() {
+  const res = await fetch("menu-config.json", { cache: "no-cache" });
+  config = await res.json();
+  render();
+}
+
+function render() {
+  renderStats();
+  renderTags();
+  renderTimeline();
+  document.getElementById("updatedAt").textContent = config.meta.updatedAt;
+}
+
+function renderStats() {
+  const s = config.stats;
+  const cards = [
+    { cls: "in-progress", label: "进行中", value: s.inProgress },
+    { cls: "review",      label: "评审中", value: s.review },
+    { cls: "delivered",   label: "已交付", value: s.delivered },
+    { cls: "archived",    label: "已归档", value: s.archived }
+  ];
+  document.getElementById("statsRow").innerHTML = cards.map(c => `
+    <div class="stat-card ${c.cls}">
+      <div class="label">${c.label}</div>
+      <div class="value">${c.value}</div>
+    </div>
+  `).join("");
+}
+
+function renderTags() {
+  document.getElementById("filterTags").innerHTML = config.tags.map(t => {
+    const c = COLORS[t.color] || COLORS.gray;
+    const active = activeTags.has(t.id) ? "active" : "";
+    return `<span class="filter-tag ${active}" data-id="${t.id}"
+      style="${active ? `background:${c.bg};color:${c.fg};border-color:${c.bg};` : ''}"
+      onclick="toggleTag('${t.id}')">${t.id}</span>`;
+  }).join("");
+}
+
+function toggleTag(id) {
+  if (activeTags.has(id)) activeTags.delete(id);
+  else activeTags.add(id);
+  renderTags();
+  renderTimeline();
+}
+
+function clearFilters() {
+  activeTags.clear();
+  document.getElementById("search").value = "";
+  searchQuery = "";
+  renderTags();
+  renderTimeline();
+}
+
+function matchesFilter(item) {
+  // 标签筛选
+  if (activeTags.size > 0) {
+    const hit = item.tags?.some(t => activeTags.has(t));
+    if (!hit) return false;
+  }
+  // 搜索
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    const hay = [
+      item.title, item.id, item.subtitle, item.version,
+      ...(item.tags || [])
+    ].join(" ").toLowerCase();
+    if (!hay.includes(q)) return false;
+  }
+  return true;
+}
+
+function renderTimeline() {
+  const wrap = document.getElementById("timeline");
+  const matchedGroups = config.groups
+    .map(g => ({ ...g, items: g.items.filter(matchesFilter) }))
+    .filter(g => g.items.length > 0);
+
+  if (matchedGroups.length === 0) {
+    wrap.innerHTML = `<div class="empty">
+      <div class="empty-icon">📭</div>
+      没有匹配的需求。试试调整搜索词或清除标签筛选。
+    </div>`;
+    return;
+  }
+
+  wrap.innerHTML = matchedGroups.map(g => {
+    const itemsHtml = g.items.map(item => renderCard(item)).join("");
+    return `
+      <section class="time-group ${g.expanded ? "expanded" : ""} color-${g.color || "blue"}">
+        <div class="time-head" onclick="toggleGroup(this.parentElement)">
+          <span class="caret">▶</span>
+          <span class="time-title">
+            ${g.title}
+            <span class="badge">${g.items.length} 项</span>
+          </span>
+          <span class="time-meta">${g.subtitle}</span>
+        </div>
+        <div class="time-body">
+          <div class="req-grid">${itemsHtml}</div>
+        </div>
+      </section>
+    `;
+  }).join("");
+}
+
+function toggleGroup(group) {
+  group.classList.toggle("expanded");
+}
+
+function renderCard(item) {
+  const tags = (item.tags || []).map(tid => {
+    const tdef = config.tags.find(t => t.id === tid);
+    const cls = tdef ? `color-${tdef.color}` : "";
+    return `<span class="tag ${cls}">${tid}</span>`;
+  }).join("");
+
+  const extras = (item.extras || []).map(e =>
+    `<a class="req-link" href="${e.url}" target="_blank">${e.label} ↗</a>`
+  ).join("");
+
+  const previewDisabled = !item.previewUrl || item.previewUrl === "#";
+  const previewHtml = previewDisabled
+    ? `<span class="req-link disabled">原型未上传</span>`
+    : `<a class="req-link primary" href="${item.previewUrl}" target="_blank">📐 原型 ↗</a>`;
+
+  const prdDisabled = !item.prdUrl || item.prdUrl === "#";
+  const prdHtml = prdDisabled
+    ? `<span class="req-link disabled">PRD 待补充</span>`
+    : `<a class="req-link" href="${item.prdUrl}" target="_blank">📄 PRD</a>`;
+
+  return `
+    <div class="req-card status-${item.status}">
+      <div class="req-card-head">
+        <span class="req-id">${item.id}</span>
+        <span class="req-version">${item.version}</span>
+        <span class="req-status ${item.status}">${STATUS_LABEL[item.status] || item.status}</span>
+      </div>
+      <h3 class="req-title">${item.title}</h3>
+      <p class="req-subtitle">${item.subtitle || ""}</p>
+      <div class="req-tags">${tags}</div>
+      <div class="req-actions">
+        ${previewHtml}
+        ${prdHtml}
+        ${extras}
+      </div>
+      <div class="req-meta">
+        ${item.branch ? `<span>分支 <code>${item.branch}</code></span>` : ""}
+        <span>更新 ${item.updatedAt}</span>
+      </div>
+    </div>
+  `;
+}
+
+// 搜索框监听
+document.getElementById("search").addEventListener("input", e => {
+  searchQuery = e.target.value.trim();
+  renderTimeline();
+});
+
+load();
+</script>
+
+</body>
+</html>
