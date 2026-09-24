@@ -149,8 +149,8 @@ git push -u origin main
 
 ## 📦 部署地址
 
-- **线上地址**：https://prototype-overview.vercel.app （待 Vercel 部署后填入）
-- **GitHub 仓库**：https://github.com/你的用户名/prototype-overview
+- **线上地址**：https://zhongwenlu-yx-prototype.vercel.app
+- **GitHub 仓库**：https://github.com/Lynnlgh0824/zhongwenlu-yx
 
 ---
 
