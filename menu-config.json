@@ -87,6 +87,21 @@
           "updatedAt": "2026-09-28"
         },
         {
+          "id": "REQ-APP-KAODIAN-FILTER",
+          "title": "App-学生-考点筛选",
+          "subtitle": "拼音考点标签同步开放到学生端，支持学生自主筛选考点练习",
+          "version": "V0.1",
+          "status": "in-progress",
+          "tags": [
+            "C端",
+            "学校"
+          ],
+          "previewUrl": "/2026.09/App-学生-考点筛选/",
+          "extras": [],
+          "branch": "feature/REQ-APP-KAODIAN-FILTER",
+          "updatedAt": "2026-09-28"
+        },
+        {
           "id": "REQ-001",
           "title": "命题作文 - 批量导入",
           "subtitle": "老师批量上传作文图片，AI 自动分类，拖拽分配",
