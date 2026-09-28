@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>考点管理 · 中文路后台</title>
+<style>
+  /* ==================== 基础 ==================== */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", Arial, sans-serif;
+    color: rgba(0,0,0,0.85); background: #f0f2f5; font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { cursor: pointer; font-family: inherit; }
+  input, textarea, select { font-family: inherit; }
+
+  /* ==================== 顶部 ==================== */
+  .topbar {
+    height: 56px; background: #001529;
+    display: flex; align-items: center; padding: 0 24px;
+    color: #fff; position: sticky; top: 0; z-index: 50;
+  }
+  .topbar .logo {
+    font-size: 18px; font-weight: 600; letter-spacing: 1px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .topbar .logo i {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: linear-gradient(135deg, #1890ff, #722ed1);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-style: normal; font-weight: 700; color: #fff;
+  }
+  .topbar .bread { margin-left: 32px; color: rgba(255,255,255,0.65); font-size: 14px; }
+  .topbar .bread span.sep { margin: 0 6px; }
+  .topbar .bread span.cur { color: #fff; }
+  .topbar .right { margin-left: auto; display: flex; align-items: center; gap: 16px; font-size: 13px; }
+  .topbar .region {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 16px;
+    background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.85);
+  }
+  .topbar .logout { color: rgba(255,255,255,0.65); cursor: pointer; }
+  .topbar .logout:hover { color: #fff; }
+
+  /* ==================== 布局 ==================== */
+  .layout { display: flex; min-height: calc(100vh - 56px); }
+  .sider {
+    width: 220px; background: #001529; color: rgba(255,255,255,0.85);
+    padding: 8px 0; flex-shrink: 0;
+  }
+  .menu-group { padding: 6px 0; }
+  .menu-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 22px;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer; position: relative;
+    font-size: 14px;
+    transition: all .15s;
+    user-select: none;
+  }
+  .menu-item:hover { color: #fff; background: rgba(255,255,255,0.04); }
+  .menu-item.active { color: #fff; background: #1890ff; }
+  .menu-item .icon { width: 16px; text-align: center; font-size: 14px; }
+  .menu-item .arrow { margin-left: auto; font-size: 10px; opacity: 0.7; }
+  .submenu { background: #000c17; overflow: hidden; max-height: 0; transition: max-height .25s ease; }
+  .menu-group.open .submenu { max-height: 600px; }
+  .submenu .sub-item {
+    padding: 8px 22px 8px 48px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .submenu .sub-item:hover { color: #fff; background: rgba(255,255,255,0.04); }
+  .submenu .sub-item.active { color: #fff; background: #1890ff; }
+  .submenu .sub-item .click-hint {
+    font-size: 10px;
+    background: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.85);
+    padding: 1px 6px;
+    border-radius: 8px;
+    opacity: 0;
+    transition: opacity .15s;
+  }
+  .submenu .sub-item:hover .click-hint { opacity: 1; }
+  .submenu .sub-item.active .click-hint { background: rgba(255,255,255,0.25); opacity: 1; }
+  .new-badge {
+    font-size: 10px; font-weight: 700; line-height: 1;
+    color: #fff; background: #ff4d4f;
+    padding: 2px 6px; border-radius: 8px;
+    margin-right: 6px;
+    box-shadow: 0 0 0 1px rgba(255,77,79,0.25);
+    letter-spacing: 0.5px;
+  }
+  .submenu .sub-item.active .new-badge { background: #fff; color: #ff4d4f; }
+
+  /* ==================== 主内容 ==================== */
+  .main { flex: 1; padding: 20px 24px; overflow-x: auto; min-width: 0; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ==================== 卡片 ==================== */
+  .card {
+    background: #fff; border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .card-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .card-hd h2 { font-size: 16px; font-weight: 600; }
+
+  /* ==================== 表单 ==================== */
+  .form-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px 16px; align-items: start;
+  }
+  .form-row.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .form-row.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .form-row.cols-1 { grid-template-columns: 1fr; }
+  .form-row-tight {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px 16px; align-items: start; margin-bottom: 16px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 13px; color: rgba(0,0,0,0.85); }
+  .field label .req { color: #ff4d4f; margin-right: 2px; }
+  .input, .select, .textarea {
+    width: 100%; padding: 6px 11px;
+    border: 1px solid #d9d9d9; border-radius: 4px;
+    background: #fff; font-size: 14px;
+    color: rgba(0,0,0,0.85);
+    height: 34px; outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .textarea { height: auto; padding: 8px 11px; resize: vertical; min-height: 70px; }
+  .input:hover, .select:hover, .textarea:hover { border-color: #40a9ff; }
+  .input:focus, .select:focus, .textarea:focus {
+    border-color: #40a9ff;
+    box-shadow: 0 0 0 2px rgba(24,144,255,0.15);
+  }
+  .input::placeholder, .textarea::placeholder { color: rgba(0,0,0,0.25); }
+  .select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3e%3cpath fill='%23bfbfbf' d='M6 9L1 4h10z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat; background-position: right 11px center;
+    padding-right: 30px;
+  }
+  .select-wrap { position: relative; }
+  .select-wrap::after {
+    content: "▾"; position: absolute; right: 10px; top: 50%;
+    transform: translateY(-50%); pointer-events: none;
+    color: rgba(0,0,0,0.45); font-size: 12px;
+  }
+  .picker-trigger {
+    display: flex; align-items: center; gap: 6px;
+    width: 100%; min-height: 34px; padding: 4px 11px;
+    border: 1px solid #d9d9d9; border-radius: 4px;
+    background: #fff; cursor: pointer; flex-wrap: wrap;
+  }
+  .picker-trigger:hover { border-color: #40a9ff; }
+  .picker-trigger::before {
+    content: attr(data-placeholder); color: rgba(0,0,0,0.25); flex: 1;
+  }
+  .picker-trigger .ptag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 0 6px; height: 22px; line-height: 22px;
+    border-radius: 2px;
+    background: #e6f7ff; color: #1890ff;
+    border: 1px solid #91d5ff;
+    font-size: 12px;
+  }
+  .ptag i { font-style: normal; opacity: 0.5; cursor: pointer; }
+  .ptag i:hover { opacity: 1; }
+  .field-actions { grid-column: 1 / -1; display: flex; gap: 8px; margin-top: 4px; }
+
+  /* ==================== 按钮 ==================== */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 16px; height: 34px;
+    border-radius: 4px; border: 1px solid transparent;
+    background: #fff; color: rgba(0,0,0,0.85);
+    font-size: 14px; transition: all .15s;
+  }
+  .btn:hover { color: #40a9ff; border-color: #40a9ff; }
+  .btn.primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+  .btn.primary:hover { background: #40a9ff; border-color: #40a9ff; color: #fff; }
+  .btn.dashed { background: #fff; border-style: dashed; border-color: #d9d9d9; color: rgba(0,0,0,0.85); }
+  .btn.dashed:hover { color: #1890ff; border-color: #1890ff; }
+  .btn.danger { color: #ff4d4f; border-color: #d9d9d9; background: #fff; }
+  .btn.danger:hover { color: #ff7875; border-color: #ff7875; }
+  .btn.link { background: transparent; border: none; padding: 0; height: auto; color: #1890ff; }
+  .btn.link:hover { color: #40a9ff; border: none; background: transparent; }
+  .btn.sm { height: 26px; padding: 0 10px; font-size: 12px; }
+  .btn-group { display: inline-flex; gap: 8px; }
+
+  /* ==================== 表格 ==================== */
+  .table-wrap { overflow-x: auto; }
+  table.zl { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.zl thead th {
+    background: #fafafa; font-weight: 500; color: rgba(0,0,0,0.85);
+    padding: 12px 16px; text-align: left;
+    border-bottom: 1px solid #f0f0f0; white-space: nowrap;
+  }
+  table.zl tbody td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    color: rgba(0,0,0,0.85);
+    vertical-align: middle;
+  }
+  table.zl tbody tr:hover td { background: #fafafa; }
+  table.zl .name { color: #1890ff; cursor: pointer; }
+  table.zl .name:hover { color: #40a9ff; text-decoration: underline; }
+  table.zl .muted { color: rgba(0,0,0,0.45); }
+  table.zl .center, table.zl .text-c { text-align: center; }
+  .ops { display: inline-flex; gap: 12px; flex-wrap: wrap; }
+
+  /* ==================== Tag ==================== */
+  .tag {
+    display: inline-flex; align-items: center;
+    padding: 0 8px; height: 22px; line-height: 22px;
+    border-radius: 2px;
+    background: rgba(0,0,0,0.04); color: rgba(0,0,0,0.65);
+    font-size: 12px; margin: 2px 4px 2px 0;
+  }
+  .tag.blue { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
+  .tag.purple { background: #f9f0ff; color: #722ed1; border: 1px solid #d3adf7; }
+  .tag .x { margin-left: 4px; cursor: pointer; font-style: normal; opacity: 0.5; }
+  .tag .x:hover { opacity: 1; }
+
+  /* ==================== 状态徽标 ==================== */
+  .badge {
+    display: inline-block; padding: 0 8px; height: 22px; line-height: 22px;
+    border-radius: 11px; font-size: 12px;
+  }
+  .badge.on { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+  .badge.off { background: #f5f5f5; color: rgba(0,0,0,0.45); border: 1px solid #d9d9d9; }
+
+  /* ==================== 分页 ==================== */
+  .pager {
+    display: flex; align-items: center; justify-content: flex-end;
+    gap: 8px; margin-top: 16px;
+    font-size: 13px; color: rgba(0,0,0,0.65);
+  }
+  .pager .pages { display: inline-flex; gap: 4px; margin: 0 12px; }
+  .pager .pg {
+    min-width: 32px; height: 32px; padding: 0 8px;
+    border: 1px solid #d9d9d9; background: #fff;
+    border-radius: 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .pager .pg.active { color: #fff; background: #1890ff; border-color: #1890ff; }
+  .pager .pg:hover:not(.active):not(:disabled) { color: #1890ff; border-color: #1890ff; }
+  .pager .pg:disabled { color: rgba(0,0,0,0.25); cursor: not-allowed; }
+  .pager select { height: 32px; padding: 0 28px 0 11px; }
+
+  /* ==================== 抽屉 ==================== */
+  .drawer-mask {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    z-index: 100; display: none;
+  }
+  .drawer-mask.show { display: block; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 820px; max-width: 100vw; background: #f0f2f5;
+    z-index: 101; transform: translateX(100%);
+    transition: transform .25s ease;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .drawer.show { transform: translateX(0); }
+  .drawer-hd {
+    height: 56px; padding: 0 24px;
+    background: #fff; border-bottom: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .drawer-hd h2 { font-size: 16px; font-weight: 600; }
+  .drawer-hd .close {
+    width: 32px; height: 32px; border-radius: 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; color: rgba(0,0,0,0.45); font-size: 22px; line-height: 1;
+  }
+  .drawer-hd .close:hover { background: rgba(0,0,0,0.04); color: rgba(0,0,0,0.85); }
+  .drawer-bd { flex: 1; overflow-y: auto; padding: 20px 24px; }
+  .drawer-ft {
+    flex-shrink: 0; height: 64px;
+    background: #fff; border-top: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: flex-end;
+    gap: 8px; padding: 0 24px;
+  }
+
+  /* ==================== 弹窗 ==================== */
+  .modal-mask {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    display: none;
+    align-items: center; justify-content: center;
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 4px;
+    width: 520px; max-width: 92vw; max-height: 92vh;
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+  .modal.lg { width: 920px; max-width: 96vw; }
+  .modal-hd {
+    height: 48px; padding: 0 20px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .modal-hd h3 { font-size: 16px; font-weight: 600; }
+  .modal-hd .close { cursor: pointer; color: rgba(0,0,0,0.45); font-size: 18px; }
+  .modal-bd { padding: 20px 24px; overflow-y: auto; flex: 1; }
+  .modal-ft {
+    padding: 12px 20px; border-top: 1px solid #f0f0f0;
+    display: flex; justify-content: flex-end; gap: 8px;
+    flex-shrink: 0;
+  }
+
+  /* ==================== 弹窗（添加试题）专用样式 ==================== */
+  .qt-tabs { display: flex; gap: 4px; margin-bottom: 20px; }
+  .qt-tab {
+    padding: 6px 18px; border-radius: 4px;
+    background: #f5f5f5; color: rgba(0,0,0,0.65);
+    cursor: pointer; font-size: 13px;
+  }
+  .qt-tab:hover { color: #1890ff; }
+  .qt-tab.active { background: #1890ff; color: #fff; }
+  .label-h {
+    font-size: 14px; font-weight: 500;
+    color: rgba(0,0,0,0.85); margin-bottom: 8px;
+  }
+  .label-h .req { color: #ff4d4f; margin-right: 2px; }
+  .title-row { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 16px; }
+  .title-row .input { flex: 1; }
+  .title-row .btn { flex-shrink: 0; }
+  .upload-zone {
+    border: 1.5px dashed #d9d9d9; border-radius: 4px;
+    padding: 24px; text-align: center;
+    background: #fafafa; cursor: pointer;
+    width: 100%; transition: border-color .2s;
+    margin-bottom: 8px;
+  }
+  .upload-zone:hover { border-color: #1890ff; }
+  .upload-zone .up-icon {
+    width: 40px; height: 40px; margin: 0 auto 6px;
+    border-radius: 50%; background: rgba(24,144,255,0.08);
+    color: #1890ff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .upload-zone .up-ttl { color: rgba(0,0,0,0.85); font-size: 13px; }
+  .tts-btn {
+    background: #1890ff; color: #fff;
+    border: none; padding: 6px 14px;
+    border-radius: 4px; font-size: 13px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .tts-btn:hover { background: #40a9ff; }
+  .add-img-btn {
+    width: 88px; height: 88px;
+    border: 1.5px dashed #d9d9d9; border-radius: 4px;
+    display: inline-flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: rgba(0,0,0,0.45); cursor: pointer; font-size: 12px;
+    gap: 4px;
+  }
+  .add-img-btn:hover { border-color: #1890ff; color: #1890ff; }
+  .opt-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .opt-bar h4 { font-size: 14px; font-weight: 500; }
+  .opt-bar .right { display: inline-flex; align-items: center; gap: 12px; }
+  table.opt-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.opt-tbl thead th {
+    background: #fafafa; padding: 8px; text-align: left;
+    border: 1px solid #f0f0f0; font-weight: 500;
+  }
+  table.opt-tbl tbody td {
+    padding: 8px; border: 1px solid #f0f0f0; vertical-align: middle;
+  }
+  table.opt-tbl .opt-letter { width: 36px; text-align: center; font-weight: 600; }
+  table.opt-tbl input[type=text] {
+    width: 100%; padding: 4px 8px;
+    border: 1px solid transparent; border-radius: 3px;
+    background: transparent; outline: none;
+  }
+  table.opt-tbl input[type=text]:focus { border-color: #40a9ff; background: #fff; }
+
+  /* ==================== 标签树 ==================== */
+  .tree-toolbar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px; border-bottom: 1px solid #f0f0f0;
+    background: #fafafa; border-radius: 4px 4px 0 0;
+  }
+  .tree-toolbar .search { flex: 1; position: relative; }
+  .tree-toolbar .search input {
+    width: 100%; height: 28px; padding: 0 10px 0 30px;
+    border: 1px solid #d9d9d9; border-radius: 4px; outline: none; font-size: 13px;
+  }
+  .tree-toolbar .search i {
+    position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+    color: rgba(0,0,0,0.35);
+  }
+  .tree {
+    border: 1px solid #f0f0f0; border-top: 0;
+    border-radius: 0 0 4px 4px;
+    background: #fff;
+    max-height: 360px; overflow-y: auto;
+  }
+  .tree-node { user-select: none; }
+  .tree-row {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 10px; cursor: pointer;
+    border-radius: 3px;
+  }
+  .tree-row:hover { background: #f5f5f5; }
+  .tree-row.selected { background: #e6f7ff; }
+  .tree-row .caret {
+    width: 14px; text-align: center; color: rgba(0,0,0,0.45);
+    font-size: 12px;
+  }
+  .tree-row .caret.leaf { visibility: hidden; }
+  .tree-row .name { font-size: 14px; }
+  .tree-row input[type=checkbox] { margin-right: 4px; }
+  .tree-children { padding-left: 22px; }
+  .selected-bar {
+    margin-top: 12px; padding: 10px 12px;
+    background: #fafafa; border: 1px dashed #d9d9d9; border-radius: 4px;
+    min-height: 40px;
+    display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+  }
+  .selected-bar:empty::before {
+    content: "尚未选择标签"; color: rgba(0,0,0,0.25); font-size: 13px;
+  }
+  .preview {
+    margin-top: 16px; padding: 12px 16px;
+    background: #f6ffed; border: 1px solid #b7eb8f;
+    border-radius: 4px; font-size: 13px;
+    color: rgba(0,0,0,0.85);
+  }
+  .preview .num { color: #389e0d; font-weight: 600; font-size: 18px; margin: 0 4px; }
+
+  /* ==================== 开关 ==================== */
+  .switch {
+    display: inline-flex; align-items: center; gap: 8px;
+    cursor: pointer; user-select: none; font-size: 13px;
+  }
+  .switch input { display: none; }
+  .switch .track {
+    width: 36px; height: 18px; border-radius: 10px;
+    background: rgba(0,0,0,0.25);
+    position: relative; transition: background .2s;
+  }
+  .switch .track::after {
+    content: ""; position: absolute; top: 2px; left: 2px;
+    width: 14px; height: 14px; border-radius: 50%; background: #fff;
+    transition: transform .2s;
+  }
+  .switch input:checked + .track { background: #1890ff; }
+  .switch input:checked + .track::after { transform: translateX(18px); }
+
+  /* ==================== 红色标注（新内容点） ==================== */
+  .new-field {
+    border: 2px dashed #ff4d4f !important;
+    border-radius: 4px;
+    padding: 12px 14px 10px !important;
+    background: #fff5f5 !important;
+    position: relative;
+  }
+  .new-field::before {
+    content: "NEW"; position: absolute;
+    top: -10px; left: 10px;
+    background: #ff4d4f; color: #fff;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    padding: 2px 8px; border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(255,77,79,0.3);
+  }
+  .new-cell {
+    background: #fff5f5 !important;
+    border-left: 2px dashed #ff4d4f !important;
+    border-right: 2px dashed #ff4d4f !important;
+    position: relative;
+  }
+  .new-cell::before {
+    content: "NEW"; position: absolute;
+    top: 4px; right: 4px;
+    background: #ff4d4f; color: #fff;
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    padding: 1px 6px; border-radius: 8px;
+  }
+  .callout {
+    background: #fff;
+    border: 1.5px solid #ff4d4f;
+    border-radius: 4px;
+    padding: 10px 14px; margin-bottom: 12px;
+    color: #d4380d; font-size: 13px;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .callout .icon {
+    width: 18px; height: 18px; flex-shrink: 0;
+    background: #ff4d4f; color: #fff; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; margin-top: 1px;
+  }
+  .callout strong { color: #cf1322; }
+  .legend {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px;
+    background: linear-gradient(90deg, #fff5f5, #fff);
+    border: 1px solid #ffa39e; border-radius: 16px;
+    font-size: 12px; color: #cf1322; margin-bottom: 12px;
+  }
+  .legend .badge {
+    background: #ff4d4f; color: #fff;
+    padding: 1px 6px; border-radius: 8px;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+  }
+  .kd-stat {
+    display: flex; gap: 16px;
+    padding: 8px 12px;
+    background: #f6ffed;
+    border: 1px solid #b7eb8f;
+    border-radius: 4px;
+    font-size: 12px;
+    color: rgba(0,0,0,0.85);
+    margin-top: 4px;
+  }
+  .kd-stat .num { color: #389e0d; font-weight: 600; }
+
+  /* ==================== 考点选择浮层 ==================== */
+  .pop-mask {
+    position: fixed; inset: 0; z-index: 300;
+    display: none;
+  }
+  .pop-mask.show { display: block; }
+  .pop-mask .bg {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.15);
+  }
+  .pop {
+    position: absolute;
+    width: 380px;
+    background: #fff; border-radius: 4px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    overflow: hidden;
+  }
+  .pop-hd {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fafafa;
+  }
+  .pop-hd h4 { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .pop-hd h4 .new-pill-sm {
+    background: #ff4d4f; color: #fff;
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    padding: 1px 6px; border-radius: 8px;
+  }
+  .pop-search {
+    padding: 8px 12px; border-bottom: 1px solid #f0f0f0;
+  }
+  .pop-search input {
+    width: 100%; height: 28px;
+    padding: 0 10px; border: 1px solid #d9d9d9;
+    border-radius: 4px; outline: none; font-size: 13px;
+  }
+  .pop-list { max-height: 260px; overflow-y: auto; }
+  .pop-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; cursor: pointer;
+  }
+  .pop-item:hover { background: #f5f5f5; }
+  .pop-item .name { flex: 1; font-size: 13px; }
+  .pop-item .desc { color: rgba(0,0,0,0.45); font-size: 12px; }
+  .pop-ft {
+    padding: 10px 12px;
+    border-top: 1px solid #f0f0f0;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .pop-ft .count { color: rgba(0,0,0,0.45); font-size: 12px; }
+
+  .muted { color: rgba(0,0,0,0.45); }
+  .text-c { text-align: center; }
+
+  /* Toast */
+  #toast {
+    position: fixed; top: 80px; left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: rgba(0,0,0,0.85); color: #fff;
+    padding: 10px 20px; border-radius: 4px;
+    font-size: 14px; opacity: 0;
+    transition: all .2s; z-index: 9999; pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ 顶部 ============ -->
+<div class="topbar">
+  <div class="logo"><i>中</i>中文路 · 运营后台</div>
+  <div class="bread" id="topbarBread">
+    <span>在线试题管理</span>
+    <span class="sep">/</span>
+    <span class="cur" id="curCrumb">考点管理</span>
+  </div>
+  <div class="right">
+    <span class="region">📍 中国香港/CN HK</span>
+    <span class="logout">退出</span>
+  </div>
+</div>
+
+<!-- ============ 布局 ============ -->
+<div class="layout">
+  <!-- 侧边栏 -->
+  <aside class="sider">
+    <div class="menu-group"><div class="menu-item"><i class="icon">📊</i>学员评价</div></div>
+    <div class="menu-group"><div class="menu-item"><i class="icon">👥</i>教师管理<i class="arrow">▾</i></div></div>
+    <div class="menu-group"><div class="menu-item"><i class="icon">🛒</i>购课订单<i class="arrow">▾</i></div></div>
+    <div class="menu-group"><div class="menu-item"><i class="icon">📱</i>APP内容管理<i class="arrow">▾</i></div></div>
+    <div class="menu-group"><div class="menu-item"><i class="icon">📣</i>营销推广<i class="arrow">▾</i></div></div>
+    <div class="menu-group"><div class="menu-item"><i class="icon">💰</i>财务管理<i class="arrow">▾</i></div></div>
+    <div class="menu-group"><div class="menu-item"><i class="icon">💼</i>薪资管理<i class="arrow">▾</i></div></div>
+    <div class="menu-group"><div class="menu-item"><i class="icon">🌐</i>来华留学<i class="arrow">▾</i></div></div>
+    <div class="menu-group"><div class="menu-item"><i class="icon">🔍</i>HSKK线索<i class="arrow">▾</i></div></div>
+    <div class="menu-group"><div class="menu-item"><i class="icon">🎓</i>在线网校<i class="arrow">▾</i></div></div>
+    <div class="menu-group"><div class="menu-item"><i class="icon">📋</i>HKPSC<i class="arrow">▾</i></div></div>
+    <div class="menu-group open">
+      <div class="menu-item active"><i class="icon">📝</i>在线试题管理<i class="arrow">▾</i></div>
+      <div class="submenu">
+        <div class="sub-item" data-view="tiku" onclick="switchView('tiku', this)">
+          <span><span class="new-badge">NEW</span>港澳题库</span>
+          <span class="click-hint">查看</span>
+        </div>
+        <div class="sub-item">港澳试卷</div>
+        <div class="sub-item">题库管理</div>
+        <div class="sub-item">海外题库</div>
+        <div class="sub-item">海外试卷</div>
+        <div class="sub-item">测试报告</div>
+        <div class="sub-item">HSKK 题目列表</div>
+        <div class="sub-item">线下水平测试</div>
+        <div class="sub-item" data-view="kaodian" onclick="switchView('kaodian', this)">
+          <span><span class="new-badge">NEW</span>考点管理</span>
+          <span class="click-hint">查看</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 主内容 -->
+  <main class="main">
+
+    <!-- ============== 视图 1：港澳题库（新增） ============== -->
+    <div class="view" id="view-tiku">
+
+      <div class="callout" style="margin-top: 0;">
+        <span class="icon">!</span>
+        <div>
+          本视图模拟「港澳题库」列表页 + 添加试题弹窗，演示<strong>「考点」字段</strong>如何接入既有页面。
+          <strong>红色虚框 / 红色 NEW 角标</strong>区域为本次新增的内容点，与原系统样式保持一致。
+        </div>
+      </div>
+      <div class="legend">
+        <span class="badge">NEW</span>
+        <span>表示本次新增的内容点（红色虚框 / 红色角标）</span>
+      </div>
+
+      <!-- 筛选 -->
+      <div class="card">
+        <div class="form-row">
+          <div class="field">
+            <label>标题</label>
+            <input class="input" placeholder="请输入" />
+          </div>
+          <div class="field">
+            <label>题型</label>
+            <div class="select-wrap"><select class="select"><option>请选择</option><option>单选题</option><option>多选题</option><option>填空题</option></select></div>
+          </div>
+          <div class="field">
+            <label>序号</label>
+            <input class="input" placeholder="请输入" />
+          </div>
+          <div class="field">
+            <label>适用范围</label>
+            <div class="select-wrap"><select class="select"><option>请选择</option></select></div>
+          </div>
+          <div class="field">
+            <label>更新时间</label>
+            <input class="input" placeholder="开始日期 ~ 结束日期" />
+          </div>
+          <div class="field">
+            <label>创建人</label>
+            <div class="select-wrap"><select class="select"><option>请选择创建人</option></select></div>
+          </div>
+          <div class="field">
+            <label>标签</label>
+            <div class="select-wrap"><select class="select"><option>请选择标签</option></select></div>
+          </div>
+          <div class="field">
+            <label>类型</label>
+            <div class="select-wrap"><select class="select"><option>请选择</option></select></div>
+          </div>
+          <div class="field">
+            <label>审核状态</label>
+            <div class="select-wrap"><select class="select"><option>请选择</option></select></div>
+          </div>
+          <div class="field new-field">
+            <label>考点</label>
+            <div class="picker-trigger" data-placeholder="选择考点" onclick="openKDPicker('filter', this)"></div>
+          </div>
+          <div class="field-actions">
+            <button class="btn primary">🔍 查询</button>
+            <button class="btn">重置</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 列表 -->
+      <div class="card">
+        <div style="margin-bottom: 12px;">
+          <button class="btn primary" onclick="openAdd()">＋ 新增试题</button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="zl">
+            <thead>
+              <tr>
+                <th style="width:340px;">试题标题</th>
+                <th style="width:80px;">序号</th>
+                <th style="width:90px;">类型</th>
+                <th style="width:90px;">题型</th>
+                <th style="width:70px;" class="text-c">分值</th>
+                <th style="width:120px;">适用范围</th>
+                <th style="width:140px;">标签</th>
+                <th style="width:200px;" class="new-cell">考点</th>
+                <th style="width:90px;">创建人</th>
+                <th style="width:90px;">审核状态</th>
+                <th style="width:140px;">创建时间</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><a style="color:#1890ff; cursor:pointer;" onclick="openAdd()">特區政府今日在政府總部舉行《教育強國建設規劃綱要（2024-20...</a></td>
+                <td class="muted">—</td>
+                <td class="muted">—</td>
+                <td>单选题</td>
+                <td class="text-c">5</td>
+                <td>香港学校/P1</td>
+                <td><span class="muted">—</span></td>
+                <td>
+                  <span class="tag purple">平翘舌</span>
+                  <span class="tag purple">前后鼻音</span>
+                </td>
+                <td>超级管理员</td>
+                <td><span class="badge on">审核通过</span></td>
+                <td class="muted">2026-09-26 17:33:51</td>
+              </tr>
+              <tr>
+                <td><a style="color:#1890ff; cursor:pointer;" onclick="openAdd()">內地同仁提及他們的學校正處於「九年義務教育」階段...</a></td>
+                <td class="muted">—</td>
+                <td class="muted">—</td>
+                <td>单选题</td>
+                <td class="text-c">1</td>
+                <td>香港学校/P1</td>
+                <td><span class="muted">—</span></td>
+                <td><span class="tag purple">前后鼻音</span></td>
+                <td>超级管理员</td>
+                <td><span class="badge on">审核通过</span></td>
+                <td class="muted">2026-09-26 17:01:19</td>
+              </tr>
+              <tr>
+                <td><a style="color:#1890ff; cursor:pointer;" onclick="openAdd()">內地同仁在帶領香港校長參觀校園時，常常自豪地展示「智慧課堂」...</a></td>
+                <td class="muted">—</td>
+                <td class="muted">—</td>
+                <td>单选题</td>
+                <td class="text-c">1</td>
+                <td>香港学校/P1</td>
+                <td><span class="muted">—</span></td>
+                <td>
+                  <span class="tag purple">人名拼写规则</span>
+                  <span class="tag purple">地名拼写规则</span>
+                </td>
+                <td>超级管理员</td>
+                <td><span class="badge on">审核通过</span></td>
+                <td class="muted">2026-09-26 16:59:48</td>
+              </tr>
+              <tr>
+                <td><a style="color:#1890ff; cursor:pointer;" onclick="openAdd()">在與內地同行交流時，如果您想介紹香港學校非常重視的「全方位...</a></td>
+                <td class="muted">—</td>
+                <td class="muted">—</td>
+                <td>单选题</td>
+                <td class="text-c">1</td>
+                <td>香港学校/P1</td>
+                <td><span class="muted">—</span></td>
+                <td><span class="muted">— 未挂载 —</span></td>
+                <td>超级管理员</td>
+                <td><span class="badge on">审核通过</span></td>
+                <td class="muted">2026-09-26 16:58:39</td>
+              </tr>
+              <tr>
+                <td><a style="color:#1890ff; cursor:pointer;" onclick="openAdd()">當您到內地參加教育會議時，內地記者問及香港學校在為學生「減負...</a></td>
+                <td class="muted">—</td>
+                <td class="muted">—</td>
+                <td>单选题</td>
+                <td class="text-c">1</td>
+                <td>香港学校/P1</td>
+                <td><span class="muted">—</span></td>
+                <td><span class="tag purple">声调变调</span></td>
+                <td>超级管理员</td>
+                <td><span class="badge on">审核通过</span></td>
+                <td class="muted">2026-09-26 16:57:49</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span>共 <strong>5</strong> 条</span>
+          <select>
+            <option>10 条/页</option><option>20 条/页</option>
+          </select>
+          <div class="pages">
+            <button class="pg" disabled>‹</button>
+            <button class="pg active">1</button>
+            <button class="pg">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== 视图 2：考点管理（已有） ============== -->
+    <div class="view" id="view-kaodian">
+
+      <div class="page-title" style="margin-bottom: 16px;">
+        <h1 style="font-size: 20px; font-weight: 600;">考点管理</h1>
+      </div>
+
+      <!-- 查询区 -->
+      <div class="card">
+        <div class="form-row cols-3">
+          <div class="field">
+            <label>考点名称</label>
+            <input class="input" placeholder="请输入考点名称" />
+          </div>
+          <div class="field">
+            <label>状态</label>
+            <select class="select">
+              <option>全部</option><option>启用</option><option>停用</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>创建时间</label>
+            <input class="input" type="text" placeholder="开始日期 ~ 结束日期" />
+          </div>
+          <div class="field-actions">
+            <button class="btn primary">🔍 查询</button>
+            <button class="btn">重置</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 列表 -->
+      <div class="card">
+        <div class="card-hd">
+          <h2>考点列表</h2>
+          <div class="btn-group">
+            <button class="btn primary" onclick="openEdit(null)">＋ 新增考点</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="zl">
+            <thead>
+              <tr>
+                <th style="width:260px;">考点名称</th>
+                <th style="width:80px;" class="text-c">关联标签</th>
+                <th style="width:80px;" class="text-c">关联题目</th>
+                <th style="width:80px;" class="text-c">状态</th>
+                <th style="width:120px;">创建人</th>
+                <th style="width:150px;">创建时间</th>
+                <th style="width:200px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="list-body"></tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span>共 <strong id="total">5</strong> 条</span>
+          <select>
+            <option>10 条/页</option><option>20 条/页</option>
+          </select>
+          <div class="pages">
+            <button class="pg" disabled>‹</button>
+            <button class="pg active">1</button>
+            <button class="pg">›</button>
+          </div>
+          <span>前往 <input class="input" style="width:50px; height:28px; padding:0 6px; text-align:center;" value="1" /> 页</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ============ 添加试题弹窗（港澳题库视图用） ============ -->
+<div class="modal-mask" id="addMask">
+  <div class="modal lg">
+    <div class="modal-hd">
+      <h3>添加试题</h3>
+      <span class="close" onclick="closeAdd()">×</span>
+    </div>
+    <div style="position:relative;background:#fff5f5;border-bottom:1px solid #ffa39e;padding:10px 24px;display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <span style="background:#ff4d4f;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:1px;flex-shrink:0;">NEW</span>
+      <span style="font-size:13px;color:#cf1322;line-height:1.5;">「<strong>考点</strong>」字段为本次新增内容。挂载的考点将出现在题目详情页，并可被「按考点筛选 / 统计」使用。</span>
+    </div>
+    <div class="modal-bd">
+      <div class="qt-tabs">
+        <div class="qt-tab active">单选题</div>
+        <div class="qt-tab">多选题</div>
+        <div class="qt-tab">选词组句</div>
+        <div class="qt-tab">排句成段</div>
+        <div class="qt-tab">完形填空</div>
+        <div class="qt-tab">选词填空</div>
+      </div>
+
+      <div class="form-row-tight">
+        <div class="field">
+          <label>适用范围</label>
+          <div class="select-wrap"><select class="select"><option>请选择</option></select></div>
+        </div>
+        <div class="field">
+          <label>标签</label>
+          <div class="select-wrap"><select class="select"><option>请选择标签</option></select></div>
+        </div>
+        <div class="field new-field" style="grid-column: span 2;">
+          <label>考点</label>
+          <div class="picker-trigger" id="kdPickerEdit" data-placeholder="选择考点（可多选）" onclick="openKDPicker('edit', this)"></div>
+          <div class="kd-stat">
+            <span>命中题目预估：<span class="num">487</span> 道</span>
+            <span class="muted">· 仅展示手工关联，不含自动聚合</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>试题类型</label>
+          <div class="select-wrap"><select class="select"><option>请选择</option></select></div>
+        </div>
+        <div class="field">
+          <label>审核状态</label>
+          <div class="select-wrap"><select class="select"><option>审核通过</option></select></div>
+        </div>
+      </div>
+
+      <div class="label-h"><span class="req">*</span>试题标题</div>
+      <div class="title-row">
+        <input class="input" placeholder="请输入标题内容(限制2000字符)" />
+        <button class="btn primary">新增小题</button>
+      </div>
+      <textarea class="textarea" placeholder="请输入语音原文" style="margin-bottom: 12px;"></textarea>
+      <div class="upload-zone">
+        <div class="up-icon">⇧</div>
+        <div class="up-ttl">上传整题音频</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+        <button class="tts-btn">🔊 文字转音频</button>
+        <div class="switch">
+          <span>是否重复播放</span>
+          <input type="checkbox" /><span class="track"></span>
+        </div>
+      </div>
+
+      <div class="label-h"><span class="req">*</span>试题题干</div>
+      <textarea class="textarea" placeholder="请输入题干内容(限制2000字符)" style="margin-bottom: 8px;"></textarea>
+      <textarea class="textarea" placeholder="请输入题干拼音" style="margin-bottom: 12px;"></textarea>
+      <div class="upload-zone">
+        <div class="up-icon">⇧</div>
+        <div class="up-ttl">上传题干音频</div>
+      </div>
+      <div style="margin-bottom: 16px;">
+        <button class="tts-btn">🔊 文字转音频</button>
+      </div>
+      <div class="add-img-btn" style="margin-bottom: 24px;">＋ 添加图片</div>
+
+      <div class="opt-bar">
+        <h4>选项</h4>
+        <div class="right">
+          <div class="switch">
+            <span>共享选项</span>
+            <input type="checkbox" /><span class="track"></span>
+          </div>
+          <button class="btn sm primary">＋ 添加选项</button>
+        </div>
+      </div>
+      <table class="opt-tbl">
+        <thead>
+          <tr>
+            <th>选项</th>
+            <th>选项文本</th>
+            <th>选项拼音</th>
+            <th style="width:90px;" class="text-c">正确答案</th>
+            <th style="width:90px;" class="text-c">是否转语音</th>
+            <th style="width:60px;" class="text-c">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="opt-letter">A</td>
+            <td><input type="text" placeholder="请输入选项文本" /></td>
+            <td><input type="text" placeholder="请输入选项拼音" /></td>
+            <td class="text-c"><input type="radio" name="ans" /></td>
+            <td class="text-c"><input type="checkbox" /></td>
+            <td class="text-c">＋</td>
+          </tr>
+          <tr>
+            <td class="opt-letter">B</td>
+            <td><input type="text" placeholder="请输入选项文本" /></td>
+            <td><input type="text" placeholder="请输入选项拼音" /></td>
+            <td class="text-c"><input type="radio" name="ans" /></td>
+            <td class="text-c"><input type="checkbox" /></td>
+            <td class="text-c">＋</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-ft">
+      <button class="btn" onclick="closeAdd()">取消</button>
+      <button class="btn primary" onclick="closeAdd()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 考点选择浮层 ============ -->
+<div class="pop-mask" id="kdPopMask">
+  <div class="bg" onclick="closeKDPicker()"></div>
+  <div class="pop" style="top: 200px; left: 50%; transform: translateX(-50%);">
+    <div class="pop-hd">
+      <h4><span class="new-pill-sm">NEW</span>选择考点</h4>
+      <span style="font-size: 12px; color: rgba(0,0,0,0.45); cursor: pointer;" onclick="closeKDPicker()">×</span>
+    </div>
+    <div class="pop-search">
+      <input placeholder="搜索考点名称" oninput="filterKDPop(this.value)" />
+    </div>
+    <div class="pop-list" id="kdPopList"></div>
+    <div class="pop-ft">
+      <span class="count" id="kdPopCount">已选 0 个</span>
+      <div>
+        <button class="btn sm" onclick="clearKDPopSel()">清空</button>
+        <button class="btn sm primary" onclick="confirmKDPop()">确定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 考点管理 · 编辑抽屉 ============ -->
+<div class="drawer-mask" id="editMask" onclick="closeEdit()"></div>
+<div class="drawer" id="editDrawer">
+  <div class="drawer-hd">
+    <h2 id="editTitle">新增考点</h2>
+    <div class="close" onclick="closeEdit()">×</div>
+  </div>
+  <div class="drawer-bd">
+    <div class="card">
+      <div class="card-hd"><h2>基本信息</h2></div>
+      <div class="form-row cols-2">
+        <div class="field">
+          <label><span class="req">*</span>考点名称</label>
+          <input class="input" id="kdName" placeholder="如：平翘舌、前后鼻音、声调变调…" />
+        </div>
+        <div class="field">
+          <label>状态</label>
+          <div style="padding-top:6px;">
+            <label class="switch">
+              <input type="checkbox" id="kdStatus" checked />
+              <span class="track"></span>
+              <span id="kdStatusLabel">启用</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="form-row cols-1" style="margin-top: 12px;">
+        <div class="field">
+          <label>备注（可选）</label>
+          <textarea class="textarea" placeholder="用于描述考点的考查范围与难度，便于运营对齐" rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <h2>关联标签</h2>
+        <div class="btn-group">
+          <button class="btn sm" onclick="expandAll()">展开</button>
+          <button class="btn sm" onclick="collapseAll()">收起</button>
+          <button class="btn sm" onclick="clearSelected()">清空</button>
+        </div>
+      </div>
+      <div class="tree-toolbar">
+        <div class="search">
+          <i>🔍</i>
+          <input placeholder="搜索标签名称…" oninput="filterTree(this.value)" />
+        </div>
+        <button class="btn sm primary" onclick="selectAllInScope()">全选当前展开</button>
+      </div>
+      <div class="tree" id="tagTree"></div>
+
+      <div class="selected-bar" id="selectedBar"></div>
+
+      <div class="preview" id="hitPreview">
+        预估命中题目：<span class="num" id="hitNum">0</span> 道
+      </div>
+    </div>
+
+    <div class="card" id="relateSection" style="display:none;">
+      <div class="card-hd">
+        <h2>已关联题目 <span class="muted" style="font-weight:normal; font-size:13px;" id="relateCount">0</span></h2>
+        <div class="btn-group">
+          <button class="btn sm">批量移出</button>
+          <button class="btn sm primary">＋ 关联题目</button>
+        </div>
+      </div>
+      <div class="form-row cols-4" style="gap: 12px; margin-bottom: 12px;">
+        <div style="background: #fff; border: 1px solid #f0f0f0; border-radius: 4px; padding: 14px;">
+          <div class="muted" style="font-size: 13px;">单选题</div>
+          <div style="font-size: 22px; font-weight: 600; margin-top: 4px;">38</div>
+        </div>
+        <div style="background: #fff; border: 1px solid #f0f0f0; border-radius: 4px; padding: 14px;">
+          <div class="muted" style="font-size: 13px;">多选题</div>
+          <div style="font-size: 22px; font-weight: 600; margin-top: 4px;">12</div>
+        </div>
+        <div style="background: #fff; border: 1px solid #f0f0f0; border-radius: 4px; padding: 14px;">
+          <div class="muted" style="font-size: 13px;">填空题</div>
+          <div style="font-size: 22px; font-weight: 600; margin-top: 4px;">7</div>
+        </div>
+        <div style="background: #fff; border: 1px solid #f0f0f0; border-radius: 4px; padding: 14px;">
+          <div class="muted" style="font-size: 13px;">拼音题</div>
+          <div style="font-size: 22px; font-weight: 600; margin-top: 4px;">9</div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="zl">
+          <thead>
+            <tr>
+              <th style="width:50px;"><input type="checkbox" /></th>
+              <th>试题标题</th>
+              <th style="width:90px;">题型</th>
+              <th style="width:90px;" class="text-c">分值</th>
+              <th style="width:160px;">创建时间</th>
+              <th style="width:90px;" class="text-c">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><input type="checkbox" /></td><td class="muted" colspan="5" style="text-align:center; padding: 32px 0;">— 暂无关联题目 —</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-ft">
+    <button class="btn" onclick="closeEdit()">取消</button>
+    <button class="btn primary" onclick="saveEdit()">保存</button>
+  </div>
+</div>
+
+<!-- ============ 删除保护弹窗 ============ -->
+<div class="modal-mask" id="delMask">
+  <div class="modal">
+    <div class="modal-hd">
+      <h3>无法删除</h3>
+      <span class="close" onclick="closeDel()">×</span>
+    </div>
+    <div class="modal-bd">
+      <div class="callout">
+        <span class="icon">!</span>
+        <div>该考点已关联 <strong id="delCount">126</strong> 道题目，无法直接删除。请先停用考点，停止使用后系统将自动从题目详情中移除该考点。</div>
+      </div>
+      <div style="display: flex; gap: 12px; font-size: 13px; color: rgba(0,0,0,0.65); margin-bottom: 6px;">
+        <div style="color: rgba(0,0,0,0.45); min-width: 80px;">考点名称</div>
+        <div id="delName">—</div>
+      </div>
+      <div style="display: flex; gap: 12px; font-size: 13px; color: rgba(0,0,0,0.65); margin-bottom: 6px;">
+        <div style="color: rgba(0,0,0,0.45); min-width: 80px;">关联题目</div>
+        <div id="delQuestions">126 道</div>
+      </div>
+      <div style="display: flex; gap: 12px; font-size: 13px; color: rgba(0,0,0,0.65);">
+        <div style="color: rgba(0,0,0,0.45); min-width: 80px;">处理建议</div>
+        <div>点击"停用考点"按钮停止该考点的对外展示与命中筛选，关联数据保留以便恢复启用。</div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn" onclick="closeDel()">取消</button>
+      <button class="btn danger" onclick="confirmOff()">停用考点</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast">已保存</div>
+
+<script>
+// ==================== 数据 ====================
+const sampleList = [
+  { id:1, name:'平翘舌', desc:'zh/ch/sh/r 与 z/c/s 的发音辨析',
+    tags:['拼音标签 / 声母 / 翘舌音（zh, ch, sh, r）','拼音标签 / 声母 / 平舌音（z, c, s）'],
+    tagCount:6, questionCount:326, status:'on', creator:'超级管理员', createdAt:'2026-09-12 10:24:38' },
+  { id:2, name:'前后鼻音', desc:'an/en/in/un/ün 与 ang/eng/ing/ong',
+    tags:['拼音标签 / 韵母 / 前鼻音','拼音标签 / 韵母 / 后鼻音'],
+    tagCount:9, questionCount:218, status:'on', creator:'超级管理员', createdAt:'2026-09-08 14:02:11' },
+  { id:3, name:'人名拼写规则', desc:'姓名拼写中的大小写、连字符、隔音符号',
+    tags:['拼写规则 / 人名拼写','拼写规则 / 专名拼写'],
+    tagCount:5, questionCount:142, status:'on', creator:'内容运营-小王', createdAt:'2026-09-05 09:33:50' },
+  { id:4, name:'地名拼写规则', desc:'地名拼写、专名缩写、地理通名大小写',
+    tags:['拼写规则 / 地名拼写','拼写规则 / 专名拼写'],
+    tagCount:4, questionCount:87, status:'off', creator:'内容运营-小王', createdAt:'2026-08-30 16:48:25' },
+  { id:5, name:'声调变调', desc:'上声变调、一/不变调、叠字变调',
+    tags:['拼音标签 / 声调 / 变调规则 / 上声变调','拼音标签 / 声调 / 变调规则 / 一/不 变调'],
+    tagCount:7, questionCount:198, status:'on', creator:'超级管理员', createdAt:'2026-08-26 11:17:09' }
+];
+
+const tagTree = [
+  { name:'拼音标签', children:[
+    { name:'声母', children:[
+      { name:'翘舌音（zh, ch, sh, r）', children:[] },
+      { name:'平舌音（z, c, s）', children:[] },
+      { name:'其他声母（b, p, m, f…）', children:[] }
+    ]},
+    { name:'韵母', children:[
+      { name:'前鼻音（an, en, in, un, ün）', children:[] },
+      { name:'后鼻音（ang, eng, ing, ong）', children:[] },
+      { name:'复韵母（ai, ei, ui, ao…）', children:[] }
+    ]},
+    { name:'整体认读音节', children:[] },
+    { name:'声调', children:[
+      { name:'变调规则', children:[
+        { name:'上声变调', children:[] },
+        { name:'一/不 变调', children:[] },
+        { name:'叠字变调', children:[] }
+      ]}
+    ]}
+  ]},
+  { name:'拼写规则', children:[
+    { name:'人名拼写', children:[] },
+    { name:'地名拼写', children:[] },
+    { name:'专名拼写', children:[] },
+    { name:'词组分写', children:[] }
+  ]},
+  { name:'汉字文化', children:[
+    { name:'多音字', children:[] },
+    { name:'形近字', children:[] },
+    { name:'易错字', children:[] }
+  ]}
+];
+
+const kaodianList = [
+  { id: 1, name: '平翘舌', desc: 'zh/ch/sh/r 与 z/c/s 的发音辨析', count: 326 },
+  { id: 2, name: '前后鼻音', desc: 'an/en/in/un/ün 与 ang/eng/ing/ong', count: 218 },
+  { id: 3, name: '人名拼写规则', desc: '姓名拼写中的大小写、连字符、隔音符号', count: 142 },
+  { id: 4, name: '地名拼写规则', desc: '地名拼写、专名缩写、地理通名大小写', count: 87 },
+  { id: 5, name: '声调变调', desc: '上声变调、一/不变调、叠字变调', count: 198 }
+];
+
+// ==================== 状态 ====================
+let selected = new Set();
+let expanded = new Set();
+let editingId = null;
+let searchKeyword = '';
+
+let kdPopSelected = new Set();
+let kdPopTarget = null;
+let kdPopTriggerEl = null;
+let kdPopConfirmed = new Set([1, 2]);
+let currentView = 'tiku';
+
+// ==================== 工具 ====================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(-20px)';
+  }, 1500);
+}
+
+// ==================== 视图切换 ====================
+function switchView(view, el) {
+  if (currentView === view) return;
+  currentView = view;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  document.querySelectorAll('.sub-item').forEach(s => s.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('curCrumb').textContent = view === 'tiku' ? '港澳题库' : '考点管理';
+  // 关闭可能存在的弹层
+  closeAdd(); closeEdit(); closeDel(); closeKDPicker();
+}
+
+// ==================== 考点管理 · 列表渲染 ====================
+function renderList() {
+  const body = document.getElementById('list-body');
+  body.innerHTML = sampleList.map(row => `
+    <tr>
+      <td>
+        <a class="name" onclick="openEdit(${row.id})">${row.name}</a>
+        ${row.desc ? `<div class="muted" style="font-size:12px; margin-top:2px;">${row.desc}</div>` : ''}
+      </td>
+      <td class="text-c">${row.tagCount}</td>
+      <td class="text-c">
+        ${row.questionCount > 0
+          ? `<a class="name" onclick="openEdit(${row.id})">${row.questionCount}</a>`
+          : `<span class="muted">0</span>`}
+      </td>
+      <td class="text-c">
+        ${row.status === 'on'
+          ? '<span class="badge on">启用</span>'
+          : '<span class="badge off">停用</span>'}
+      </td>
+      <td>${row.creator}</td>
+      <td class="muted">${row.createdAt}</td>
+      <td>
+        <div class="ops">
+          <button class="btn link" onclick="openEdit(${row.id})">编辑</button>
+          <button class="btn link" onclick="toggleStatus(${row.id})">${row.status === 'on' ? '停用' : '启用'}</button>
+          <button class="btn link" onclick="tryDelete(${row.id})">删除</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+  document.getElementById('total').textContent = sampleList.length;
+}
+
+// ==================== 标签树渲染 ====================
+function renderTree() {
+  document.getElementById('tagTree').innerHTML = renderNodes(tagTree, []);
+}
+function renderNodes(nodes, parentPath) {
+  if (!nodes.length) return '';
+  return nodes.map(node => {
+    const path = [...parentPath, node.name];
+    const pathStr = path.join(' / ');
+    const isLeaf = !node.children || node.children.length === 0;
+    const isOpen = expanded.has(pathStr) || searchKeyword;
+    const isSelected = selected.has(pathStr);
+    const style = searchKeyword && !pathStr.toLowerCase().includes(searchKeyword.toLowerCase())
+      ? 'opacity:.35;' : '';
+    return `
+      <div class="tree-node" data-path="${pathStr}" style="${style}">
+        <div class="tree-row ${isSelected ? 'selected' : ''}">
+          <span class="caret ${isLeaf ? 'leaf' : ''}" onclick="toggleNode('${pathStr}', ${isLeaf})">${isLeaf ? '·' : (isOpen ? '▾' : '▸')}</span>
+          <input type="checkbox" ${isSelected ? 'checked' : ''} onclick="toggleSel('${pathStr}', ${isLeaf}, event)" />
+          <span class="name">${node.name}</span>
+        </div>
+        ${(!isLeaf && isOpen) ? `<div class="tree-children">${renderNodes(node.children, path)}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+function toggleNode(pathStr, isLeaf) {
+  if (isLeaf) return;
+  if (expanded.has(pathStr)) expanded.delete(pathStr);
+  else expanded.add(pathStr);
+  renderTree();
+}
+function toggleSel(pathStr, isLeaf, e) {
+  e.stopPropagation();
+  function collectAllLeaves(nodes, p) {
+    const out = [];
+    for (const n of nodes) {
+      const np = [...p, n.name];
+      if (!n.children || n.children.length === 0) out.push(np.join(' / '));
+      else out.push(...collectAllLeaves(n.children, np));
+    }
+    return out;
+  }
+  function find(nodes, p) {
+    if (p.length === 1) return nodes.find(n => n.name === p[0]);
+    return find(nodes.find(n => n.name === p[0]).children || [], p.slice(1));
+  }
+  const parts = pathStr.split(' / ');
+  const node = find(tagTree, parts);
+  if (!node) return;
+  const leaves = collectAllLeaves([node], []);
+  if (selected.has(pathStr)) {
+    selected.delete(pathStr);
+    leaves.forEach(l => selected.delete(l));
+  } else {
+    selected.add(pathStr);
+    leaves.forEach(l => selected.add(l));
+  }
+  renderTree();
+  renderSelectedBar();
+  renderHitPreview();
+}
+function expandAll() {
+  function all(nodes, p) {
+    const out = [];
+    for (const n of nodes) {
+      const np = [...p, n.name];
+      if (n.children && n.children.length) {
+        out.push(np.join(' / '));
+        out.push(...all(n.children, np));
+      }
+    }
+    return out;
+  }
+  all(tagTree, []).forEach(p => expanded.add(p));
+  renderTree();
+}
+function collapseAll() { expanded.clear(); renderTree(); }
+function clearSelected() { selected.clear(); renderTree(); renderSelectedBar(); renderHitPreview(); }
+function selectAllInScope() {
+  function leaves(nodes, p, open) {
+    const out = [];
+    for (const n of nodes) {
+      const np = [...p, n.name];
+      const pathStr = np.join(' / ');
+      if (!n.children || n.children.length === 0) out.push(pathStr);
+      else if (open && expanded.has(pathStr)) out.push(...leaves(n.children, np, open));
+    }
+    return out;
+  }
+  leaves(tagTree, [], true).forEach(p => selected.add(p));
+  renderTree();
+  renderSelectedBar();
+  renderHitPreview();
+}
+function filterTree(kw) {
+  searchKeyword = kw.trim();
+  renderTree();
+}
+function renderSelectedBar() {
+  const bar = document.getElementById('selectedBar');
+  if (!selected.size) { bar.innerHTML = ''; return; }
+  bar.innerHTML = [...selected].map(p =>
+    `<span class="tag blue">${p}<i class="x" onclick="removeSel('${p}')">×</i></span>`
+  ).join('');
+}
+function removeSel(pathStr) {
+  selected.delete(pathStr);
+  renderTree();
+  renderSelectedBar();
+  renderHitPreview();
+}
+function renderHitPreview() {
+  document.getElementById('hitNum').textContent = (selected.size * 32).toLocaleString();
+}
+
+// ==================== 考点管理 · 编辑抽屉 ====================
+function openEdit(id) {
+  if (currentView !== 'kaodian') return;
+  editingId = id;
+  document.getElementById('editTitle').textContent = id ? '编辑考点' : '新增考点';
+  selected.clear(); expanded.clear();
+
+  if (id) {
+    const row = sampleList.find(r => r.id === id);
+    if (row) {
+      document.getElementById('kdName').value = row.name;
+      document.getElementById('kdStatus').checked = row.status === 'on';
+      document.getElementById('kdStatusLabel').textContent = row.status === 'on' ? '启用' : '停用';
+      row.tags.forEach(t => selected.add(t));
+      row.tags.forEach(t => {
+        const parts = t.split(' / ');
+        let cur = '';
+        for (let i = 0; i < parts.length - 1; i++) {
+          cur = cur ? cur + ' / ' + parts[i] : parts[i];
+          expanded.add(cur);
+        }
+      });
+      document.getElementById('relateSection').style.display = 'block';
+      document.getElementById('relateCount').textContent = `· 共 ${row.questionCount} 道`;
+    }
+  } else {
+    document.getElementById('kdName').value = '';
+    document.getElementById('kdStatus').checked = true;
+    document.getElementById('kdStatusLabel').textContent = '启用';
+    document.getElementById('relateSection').style.display = 'none';
+  }
+
+  renderTree();
+  renderSelectedBar();
+  renderHitPreview();
+  document.getElementById('editMask').classList.add('show');
+  document.getElementById('editDrawer').classList.add('show');
+}
+function closeEdit() {
+  document.getElementById('editMask').classList.remove('show');
+  document.getElementById('editDrawer').classList.remove('show');
+}
+function saveEdit() {
+  const name = document.getElementById('kdName').value.trim();
+  if (!name) { showToast('请填写考点名称'); return; }
+  if (!selected.size) { showToast('请至少选择一个标签'); return; }
+
+  if (editingId) {
+    const row = sampleList.find(r => r.id === editingId);
+    Object.assign(row, {
+      name, status: document.getElementById('kdStatus').checked ? 'on' : 'off',
+      tags: [...selected], tagCount: selected.size,
+    });
+    showToast('已保存修改');
+  } else {
+    sampleList.unshift({
+      id: Date.now(), name, desc: '',
+      tags: [...selected], tagCount: selected.size,
+      questionCount: selected.size * 32,
+      status: 'on', creator: '超级管理员',
+      createdAt: new Date().toISOString().slice(0,19).replace('T',' ')
+    });
+    showToast('已新增考点');
+  }
+  renderList();
+  closeEdit();
+}
+function toggleStatus(id) {
+  const row = sampleList.find(r => r.id === id);
+  if (!row) return;
+  row.status = row.status === 'on' ? 'off' : 'on';
+  renderList();
+  showToast(row.status === 'on' ? '考点已恢复启用' : '考点已停用');
+}
+function tryDelete(id) {
+  const row = sampleList.find(r => r.id === id);
+  if (!row) return;
+  if (row.questionCount > 0) {
+    document.getElementById('delName').textContent = row.name;
+    document.getElementById('delCount').textContent = row.questionCount;
+    document.getElementById('delQuestions').textContent = row.questionCount + ' 道';
+    document.getElementById('delMask').classList.add('show');
+    return;
+  }
+  if (!confirm(`确定要删除考点"${row.name}"吗？此操作不可恢复。`)) return;
+  const idx = sampleList.findIndex(r => r.id === id);
+  sampleList.splice(idx, 1);
+  renderList();
+  showToast('已删除');
+}
+function closeDel() { document.getElementById('delMask').classList.remove('show'); }
+function confirmOff() {
+  const row = sampleList.find(r => r.name === document.getElementById('delName').textContent);
+  if (row) row.status = 'off';
+  closeDel();
+  renderList();
+  showToast('已停用考点');
+}
+document.getElementById('kdStatus').addEventListener('change', e => {
+  document.getElementById('kdStatusLabel').textContent = e.target.checked ? '启用' : '停用';
+});
+
+// ==================== 港澳题库 · 添加试题弹窗 ====================
+function openAdd() {
+  if (currentView !== 'tiku') return;
+  document.getElementById('addMask').classList.add('show');
+  renderPickerTriggers();
+}
+function closeAdd() {
+  document.getElementById('addMask').classList.remove('show');
+}
+
+// Tab 切换
+document.addEventListener('click', e => {
+  if (e.target.classList && e.target.classList.contains('qt-tab')) {
+    const tabs = e.target.parentElement.querySelectorAll('.qt-tab');
+    tabs.forEach(x => x.classList.remove('active'));
+    e.target.classList.add('active');
+  }
+});
+
+// ==================== 考点选择浮层 ====================
+function renderKDTrigger(el, ids) {
+  if (!ids.size) {
+    el.innerHTML = '';
+    el.removeAttribute('data-filled');
+    return;
+  }
+  el.setAttribute('data-filled', '1');
+  el.innerHTML = [...ids].map(id => {
+    const k = kaodianList.find(x => x.id === id);
+    return `<span class="ptag">${k.name}<i onclick="event.stopPropagation();removeKDFromTrigger('${kdPopTarget}','${id}',event)">×</i></span>`;
+  }).join('');
+}
+function removeKDFromTrigger(target, id, e) {
+  if (target === 'edit') kdPopConfirmed.delete(+id);
+  renderPickerTriggers();
+}
+function renderPickerTriggers() {
+  renderKDTrigger(document.querySelector('[data-placeholder="选择考点"]'), new Set());
+  renderKDTrigger(document.getElementById('kdPickerEdit'), kdPopConfirmed);
+}
+function openKDPicker(target, el) {
+  kdPopTarget = target;
+  kdPopTriggerEl = el;
+  kdPopSelected = new Set(target === 'edit' ? kdPopConfirmed : []);
+  renderKDList(kdPopSelected);
+  document.getElementById('kdPopMask').classList.add('show');
+}
+function closeKDPicker() {
+  document.getElementById('kdPopMask').classList.remove('show');
+}
+function renderKDList(selectedSet) {
+  const list = document.getElementById('kdPopList');
+  const kw = (document.querySelector('#kdPopMask .pop-search input').value || '').trim().toLowerCase();
+  const items = kaodianList.filter(k => !kw || k.name.toLowerCase().includes(kw));
+  list.innerHTML = items.map(k => {
+    const checked = selectedSet.has(k.id);
+    return `
+      <div class="pop-item" onclick="toggleKDInPop(${k.id})">
+        <input type="checkbox" ${checked ? 'checked' : ''} onclick="event.stopPropagation();toggleKDInPop(${k.id})" />
+        <span class="name">${k.name}</span>
+        <span class="desc">${k.count} 题</span>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('kdPopCount').textContent = '已选 ' + selectedSet.size + ' 个';
+}
+function toggleKDInPop(id) {
+  if (kdPopSelected.has(id)) kdPopSelected.delete(id);
+  else kdPopSelected.add(id);
+  renderKDList(kdPopSelected);
+}
+function filterKDPop(kw) {
+  renderKDList(kdPopSelected);
+}
+function clearKDPopSel() {
+  kdPopSelected.clear();
+  renderKDList(kdPopSelected);
+}
+function confirmKDPop() {
+  if (kdPopTarget === 'edit') {
+    kdPopConfirmed = new Set(kdPopSelected);
+    renderPickerTriggers();
+  } else {
+    if (kdPopTriggerEl) renderKDTrigger(kdPopTriggerEl, kdPopSelected);
+  }
+  closeKDPicker();
+  showToast(kdPopTarget === 'edit' ? '已保存考点关联' : '已应用筛选');
+}
+
+// ==================== 初始化 ====================
+renderList();
+renderPickerTriggers();
+// 默认显示「港澳题库」视图（演示新增字段），同时高亮对应菜单
+document.querySelector('.sub-item[data-view="tiku"]').classList.add('active');
+document.getElementById('view-tiku').classList.add('active');
+</script>
+
+</body>
+</html>
