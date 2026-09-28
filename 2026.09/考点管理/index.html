@@ -92,13 +92,15 @@
 
   /* ============== 主区域 ============== */
   .main { flex: 1; padding: 16px 24px; overflow-x: auto; background: #f4f5f7; min-width: 0; }
-  .surface-tabs { margin-left: 28px; display:flex; align-self:stretch; align-items:flex-end; gap:4px; }
-  .surface-tabs button { border:0; background:transparent; padding:0 18px 17px; height:40px; color:#8c8c8c; cursor:pointer; font-size:13px; border-bottom:2px solid transparent; }
+  .surface-switch { height:48px; background:#fff; border-bottom:1px solid #e8e8e8; display:flex; align-items:flex-end; padding-left:240px; gap:4px; }
+  .surface-tabs { display:flex; align-items:flex-end; gap:4px; height:100%; }
+  .surface-tabs button { border:0; background:transparent; padding:0 22px 13px; height:42px; color:#8c8c8c; cursor:pointer; font-size:13px; border-bottom:2px solid transparent; }
   .surface-tabs button.active { color:#1890ff; border-bottom-color:#1890ff; font-weight:600; }
   .app-preview { flex:1; background:#eef1f7; padding:0; min-width:380px; }
   .app-preview iframe { display:block; width:100%; height:100%; min-height:calc(100vh - 56px); border:0; background:#f7f8fc; }
   .app-mode .sider, .topbar.app-mode-bar .bread, .topbar.app-mode-bar .right { display:none; }
-  .topbar.app-mode-bar .surface-tabs { margin-left:auto; }
+  .topbar.app-mode-bar .bread, .topbar.app-mode-bar .right { display:none; }
+  .surface-switch.app-mode-switch { padding-left:24px; }
 
   /* ============== 卡片 ============== */
   .card {
@@ -288,13 +290,16 @@
       在线试题管理 /
       <span class="crumb-cur">{{ currentView === 'tiku' ? '港澳题库' : '考点管理' }}</span>
     </div>
-    <div class="surface-tabs" role="tablist" aria-label="原型端">
-      <button :class="{active: currentSurface === 'app'}" @click="currentSurface = 'app'" role="tab">App</button>
-      <button :class="{active: currentSurface === 'backend'}" @click="currentSurface = 'backend'" role="tab">后台</button>
-    </div>
     <div class="right">
       <div class="user-pill"><span class="dot"></span>📍 中国香港/CN HK</div>
       <a-button type="text" size="small">退出</a-button>
+    </div>
+  </div>
+
+  <div class="surface-switch" :class="{'app-mode-switch': currentSurface === 'app'}">
+    <div class="surface-tabs" role="tablist" aria-label="原型端">
+      <button :class="{active: currentSurface === 'app'}" @click="currentSurface = 'app'" role="tab">App</button>
+      <button :class="{active: currentSurface === 'backend'}" @click="currentSurface = 'backend'" role="tab">后台</button>
     </div>
   </div>
 
@@ -489,7 +494,7 @@
               考点列表
               <span class="muted" style="font-weight:normal;">共 {{ kaodianList.length }} 个</span>
             </h2>
-            <a-button type="primary" @click="openKaodianEdit()">＋ 新增考点</a-button>
+            <div style="display:flex;gap:8px;"><a-button @click="batchAssociate">⚙ 批量关联题目</a-button><a-button type="primary" @click="openKaodianEdit()">＋ 新增考点</a-button></div>
           </div>
 
           <!-- 表格 -->
@@ -506,6 +511,15 @@
                   <a style="color:#1890ff; font-weight:500;">{{ record.name }}</a>
                   <div class="muted">{{ record.pinyinHint }}</div>
                 </div>
+              </template>
+              <template v-else-if="column.dataIndex === 'category'">
+                <a-tag color="blue">{{ record.category }}</a-tag>
+              </template>
+              <template v-else-if="column.dataIndex === 'scope'">
+                <span class="muted">{{ record.scope.join(' / ') }}</span>
+              </template>
+              <template v-else-if="column.dataIndex === 'pinned'">
+                <a-tag :color="record.pinned ? 'gold' : 'default'">{{ record.pinned ? '置顶' : '否' }}</a-tag>
               </template>
               <template v-else-if="column.dataIndex === 'tagCount'">
                 <a style="color:#1890ff; cursor:pointer;">{{ record.tagCount }}</a>
@@ -560,6 +574,9 @@
                 <label>状态</label>
                 <a-switch v-model:checked="kdForm.statusOn" checked-children="启用" un-checked-children="停用" />
               </div>
+              <div class="field"><label>考点分类</label><a-select v-model:value="kdForm.category" :options="categoryOpts" /></div>
+              <div class="field"><label>适用范围</label><a-select v-model:value="kdForm.scope" mode="multiple" :options="scopeOpts2" /></div>
+              <div class="field"><label>展示配置</label><a-checkbox v-model:checked="kdForm.pinned">筛选区置顶</a-checkbox></div>
               <div class="field" style="grid-column: span 4;">
                 <label>备注（可选）</label>
                 <a-textarea v-model:value="kdForm.note" :rows="3" placeholder="用于描述考点的考查范围与难度，便于运营对齐" />
@@ -777,14 +794,17 @@ const app = createApp({
 
     // ==================== 考点管理视图 ====================
     const kaodianList = reactive([
-      { id: 1, name: '平翘舌', pinyinHint: 'zh/ch/sh/r 与 z/c/s 的发音辨析', tagCount: 6, questionCount: 326, status: 'on', creator: '超级管理员', createdAt: '2026-09-12 10:24:38' },
-      { id: 2, name: '前后鼻音', pinyinHint: 'an/en/in/un/ün 与 ang/eng/ing/ong', tagCount: 9, questionCount: 218, status: 'on', creator: '超级管理员', createdAt: '2026-09-08 14:02:11' },
-      { id: 3, name: '人名拼写规则', pinyinHint: '姓名拼写中的大小写、连字符、隔音符号', tagCount: 5, questionCount: 142, status: 'on', creator: '内容运营-小王', createdAt: '2026-09-05 09:33:50' },
-      { id: 4, name: '地名拼写规则', pinyinHint: '地名拼写，专名缩写、地理通名大小写', tagCount: 4, questionCount: 87, status: 'off', creator: '内容运营-小王', createdAt: '2026-08-30 16:48:25' },
-      { id: 5, name: '声调变调', pinyinHint: '上声变调、一/不变调、叠字变调', tagCount: 7, questionCount: 198, status: 'on', creator: '超级管理员', createdAt: '2026-08-26 11:17:09' },
+      { id: 1, name: '平翘舌', category:'拼音类', scope:['中学','老师端','学生端'], pinned:true, pinyinHint: 'zh/ch/sh/r 与 z/c/s 的发音辨析', tagCount: 6, questionCount: 326, status: 'on', creator: '超级管理员', createdAt: '2026-09-12 10:24:38' },
+      { id: 2, name: '前后鼻音', category:'拼音类', scope:['中学','老师端','学生端'], pinned:true, pinyinHint: 'an/en/in/un/ün 与 ang/eng/ing/ong', tagCount: 9, questionCount: 218, status: 'on', creator: '超级管理员', createdAt: '2026-09-08 14:02:11' },
+      { id: 3, name: '人名拼写规则', category:'拼写规则类', scope:['中学','老师端','学生端'], pinned:false, pinyinHint: '姓名拼写中的大小写、连字符、隔音符号', tagCount: 5, questionCount: 142, status: 'on', creator: '内容运营-小王', createdAt: '2026-09-05 09:33:50' },
+      { id: 4, name: '地名拼写规则', category:'拼写规则类', scope:['中学','老师端'], pinned:false, pinyinHint: '地名拼写，专名缩写、地理通名大小写', tagCount: 4, questionCount: 87, status: 'off', creator: '内容运营-小王', createdAt: '2026-08-30 16:48:25' },
+      { id: 5, name: '变调', category:'声调类', scope:['中学','老师端','学生端'], pinned:true, pinyinHint: '上声变调、一/不变调、叠字变调', tagCount: 7, questionCount: 198, status: 'on', creator: '超级管理员', createdAt: '2026-08-26 11:17:09' },
     ]);
     const kaodianCols = [
       { title: '考点名称', dataIndex: 'name', width: 240 },
+      { title: '分类', dataIndex: 'category', width: 100 },
+      { title: '适用范围', dataIndex: 'scope', width: 150 },
+      { title: '置顶', dataIndex: 'pinned', width: 70, align: 'center' },
       { title: '关联标签', dataIndex: 'tagCount', width: 100, align: 'center' },
       { title: '关联题目', dataIndex: 'questionCount', width: 100, align: 'center' },
       { title: '状态', dataIndex: 'status', width: 80, align: 'center' },
@@ -805,11 +825,14 @@ const app = createApp({
     const kaodianEditVisible = ref(false);
     const kaodianEditing = ref(null);
     const kdForm = reactive({ name: '', statusOn: true, note: '' });
+    const categoryOpts = [{value:'拼音类',label:'拼音类'},{value:'声调类',label:'声调类'},{value:'拼写规则类',label:'拼写规则类'}];
+    const scopeOpts2 = [{value:'中学',label:'中学'},{value:'小学',label:'小学'},{value:'老师端',label:'老师端'},{value:'学生端',label:'学生端'}];
+    function batchAssociate(){ $message.success('批量关联任务已创建，将自动匹配 9000+ 道题目'); }
     function openKaodianEdit(row) {
       kaodianEditing.value = row || null;
       Object.assign(kdForm, row ? {
-        name: row.name, statusOn: row.status === 'on', note: row.note || '',
-      } : { name: '', statusOn: true, note: '' });
+        name: row.name, statusOn: row.status === 'on', note: row.note || '', category: row.category, scope: row.scope, pinned: row.pinned,
+      } : { name: '', statusOn: true, note: '', category: '拼音类', scope: ['中学','老师端','学生端'], pinned: false });
       selectedTags.clear();
       expanded.clear();
       if (row && row.tags) row.tags.forEach(t => {
@@ -982,7 +1005,7 @@ const app = createApp({
       qTypeOpts, scopeOpts, creatorOpts, qCatOpts, auditOpts, tagOpts,
       tikuFilter, tikuList, tikuCols, resetTikuFilter,
       tikuEditVisible, tikuEditing, tikuForm, openTikuEdit, saveTiku,
-      kaodianList, kaodianCols, toggleKDStatus, confirmDelete,
+      kaodianList, kaodianCols, toggleKDStatus, confirmDelete, batchAssociate, categoryOpts, scopeOpts2,
       kaodianEditVisible, kaodianEditing, kdForm, openKaodianEdit, saveKaodian,
       tagKw, expanded, selectedTags, tagTreeRendered,
       renderTree, toggleExpand, toggleSel, expandAll, selectAllInScope,
