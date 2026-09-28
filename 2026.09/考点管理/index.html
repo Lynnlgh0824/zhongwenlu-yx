@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>考点管理 · 中文路后台</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- Vue 3 (UMD, 全局变量) -->
+<script src="https://unpkg.com/vue@3.4.27/dist/vue.global.prod.js"></script>
+<!-- Ant Design Vue 2 (使用 esm.sh 解决 UMD 兼容问题) -->
+<link rel="stylesheet" href="https://unpkg.com/ant-design-vue@2.2.6/dist/antd.min.css">
+<script type="module">
+  // 把 AntD Vue 挂到 window 上供传统 <script> 使用
+  import antd from 'https://esm.sh/ant-design-vue@2.2.6?bundle&deps=vue@3.4.27';
+  import AntdVue from 'https://esm.sh/@ant-design/icons-vue@7.0.1?bundle&deps=vue@3.4.27';
+  window.antd = antd;
+  window.AntdVue = AntdVue;
+  window.__antdReady = true;
+  window.dispatchEvent(new Event('antd-ready'));
+</script>
+<style>
+  /* ============== 基础 ============== */
+  * { box-sizing: border-box; }
+  html, body, #app { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f4f5f7; color: #1f2937; font-size: 13px;
+  }
+  .new-badge {
+    display: inline-block;
+    font-size: 10px; font-weight: 700; line-height: 1;
+    color: #fff; background: #ff4d4f;
+    padding: 2px 6px; border-radius: 8px;
+    margin-right: 6px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 0 1px rgba(255,77,79,0.25);
+  }
+
+  /* ============== 侧栏 ============== */
+  .sider {
+    width: 220px; background: #001529; color: rgba(255,255,255,0.65);
+    display: flex; flex-direction: column; overflow-y: auto;
+  }
+  .sider::-webkit-scrollbar { width: 4px; }
+  .sider::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+  .menu-group { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .menu-item {
+    padding: 12px 18px; display: flex; align-items: center; gap: 10px;
+    cursor: pointer; font-size: 14px; color: rgba(255,255,255,0.85);
+    transition: all .15s;
+  }
+  .menu-item:hover { color: #fff; background: rgba(255,255,255,0.04); }
+  .menu-item.active { color: #fff; background: #1890ff; }
+  .menu-item .icon { font-size: 14px; }
+  .menu-item .arrow { margin-left: auto; font-size: 10px; opacity: 0.7; }
+  .submenu { background: #000c17; overflow: hidden; }
+  .submenu .sub-item {
+    padding: 9px 22px 9px 48px; font-size: 13px;
+    color: rgba(255,255,255,0.6); cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+    transition: all .15s;
+  }
+  .submenu .sub-item:hover { color: #fff; background: rgba(255,255,255,0.04); }
+  .submenu .sub-item.active { color: #fff; background: #1890ff; }
+  .submenu .sub-item.active .new-badge { background: #fff; color: #ff4d4f; }
+  .submenu .sub-item .click-hint {
+    font-size: 10px; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.85);
+    padding: 1px 6px; border-radius: 8px; opacity: 0; transition: opacity .15s;
+  }
+  .submenu .sub-item:hover .click-hint { opacity: 1; }
+  .submenu .sub-item.active .click-hint { background: rgba(255,255,255,0.25); opacity: 1; }
+
+  /* ============== 顶栏 ============== */
+  .topbar {
+    background: #fff; border-bottom: 1px solid #f0f0f0;
+    padding: 0 24px; height: 56px; display: flex; align-items: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .topbar .logo {
+    font-size: 16px; font-weight: 600; color: #111827;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .topbar .logo i {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+  }
+  .topbar .bread { margin-left: 32px; color: #6b7280; font-size: 13px; }
+  .topbar .bread .crumb-cur { color: #111827; font-weight: 600; margin-left: 6px; }
+  .topbar .right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .topbar .right .user-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(0,0,0,0.04); padding: 4px 12px; border-radius: 16px;
+    font-size: 12px; color: #374151;
+  }
+  .topbar .right .user-pill .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: #ff4d4f;
+  }
+
+  /* ============== 主区域 ============== */
+  .main { flex: 1; padding: 16px 24px; overflow-x: auto; background: #f4f5f7; min-width: 0; }
+
+  /* ============== 卡片 ============== */
+  .card {
+    background: #fff; border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    padding: 16px 20px; margin-bottom: 12px;
+  }
+  .card-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .card-hd h2 { font-size: 15px; font-weight: 600; margin: 0; }
+  .card-hd .h2-sub { color: #6b7280; font-weight: 400; font-size: 12px; margin-left: 8px; }
+
+  /* ============== callout 顶部说明 ============== */
+  .callout {
+    background: #fff8f8; border: 1px solid #ffccc7; border-radius: 4px;
+    padding: 10px 14px; font-size: 13px; color: #5c2121;
+    margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start;
+  }
+  .callout .icon-dot {
+    width: 18px; height: 18px; border-radius: 50%; background: #ff4d4f; color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;
+    flex-shrink: 0;
+  }
+  .callout strong { color: #ff4d4f; }
+  .callout .legend {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 4px 12px; border: 1px dashed #ff4d4f; border-radius: 16px;
+    margin-top: 6px; background: #fff;
+  }
+
+  /* ============== NEW 字段标识 ============== */
+  .new-field { position: relative; }
+  .new-field label {
+    color: #ff4d4f !important; font-weight: 600;
+  }
+  .new-field label::before {
+    content: "NEW"; display: inline-block;
+    font-size: 9px; line-height: 1; color: #fff; background: #ff4d4f;
+    padding: 2px 5px; border-radius: 6px; margin-right: 6px;
+    vertical-align: middle; font-weight: 700; letter-spacing: 0.3px;
+  }
+  .new-field .ant-input, .new-field .ant-select, .new-field .picker-trigger {
+    border: 1px dashed #ff4d4f !important;
+    background: #fff8f8 !important;
+  }
+  .new-field .ant-input::placeholder, .new-field .picker-trigger { color: #ff7875 !important; }
+
+  /* ============== 表格 NEW 列 ============== */
+  .th-new, .td-new {
+    color: #ff4d4f !important; font-weight: 600;
+    position: relative;
+  }
+  .th-new::before {
+    content: "NEW"; display: inline-block;
+    font-size: 9px; line-height: 1; color: #fff; background: #ff4d4f;
+    padding: 2px 5px; border-radius: 6px; margin-right: 6px;
+    vertical-align: middle; font-weight: 700; letter-spacing: 0.3px;
+  }
+
+  /* ============== picker-trigger ============== */
+  .picker-trigger {
+    border: 1px solid #d9d9d9; border-radius: 4px;
+    padding: 4px 11px; min-height: 32px; cursor: pointer;
+    background: #fff; font-size: 13px;
+    display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
+  }
+  .picker-trigger:hover { border-color: #1890ff; }
+  .picker-trigger .empty { color: #bfbfbf; }
+
+  /* ============== 标签 chip ============== */
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #e6f4ff; border: 1px solid #91caff;
+    color: #0958d9; padding: 0 8px; height: 22px;
+    border-radius: 4px; font-size: 12px; line-height: 20px;
+  }
+  .chip .x { cursor: pointer; font-size: 14px; line-height: 1; }
+  .chip .x:hover { color: #ff4d4f; }
+
+  /* ============== 统计行 ============== */
+  .kd-stat, .preview {
+    background: #f6ffed; border: 1px solid #b7eb8f; border-radius: 4px;
+    padding: 8px 14px; margin-top: 8px; font-size: 13px;
+    color: #135200; display: flex; align-items: center; gap: 8px;
+  }
+  .kd-stat .num, .preview .num { color: #389e0d; font-weight: 600; font-size: 14px; }
+  .kd-stat .muted, .preview .muted { color: #8c8c8c; font-size: 12px; }
+
+  /* ============== 弹窗 ============== */
+  .ant-drawer-body { padding: 16px 24px; }
+  .form-section { margin-bottom: 16px; }
+  .form-section h3 { font-size: 14px; font-weight: 600; margin: 0 0 12px; color: #1f2937; }
+
+  /* ============== 标签树 ============== */
+  .tag-tree {
+    border: 1px solid #f0f0f0; border-radius: 4px;
+    max-height: 280px; overflow-y: auto; padding: 4px 0;
+  }
+  .tag-tree .node {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 12px; cursor: pointer; user-select: none;
+    font-size: 13px;
+  }
+  .tag-tree .node:hover { background: #f5f5f5; }
+  .tag-tree .node.selected { background: #e6f4ff; color: #1890ff; }
+  .tag-tree .node .twisty {
+    width: 16px; text-align: center; color: #8c8c8c; font-size: 10px;
+    cursor: pointer;
+  }
+  .tag-tree .node input[type=checkbox] { margin-right: 4px; }
+
+  .toolbar {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .toolbar .search-box {
+    flex: 1; min-width: 200px;
+  }
+  .selected-bar {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    min-height: 32px; padding: 6px 8px; margin: 8px 0;
+    border: 1px dashed #d9d9d9; border-radius: 4px;
+    align-items: center;
+  }
+  .selected-bar:empty::before {
+    content: "尚未选择标签"; color: #bfbfbf; font-size: 12px;
+  }
+
+  /* 表格微调 */
+  .ant-table-thead > tr > th { background: #fafafa !important; font-weight: 600; }
+  .ant-table-tbody > tr:hover > td { background: #f5f5f5 !important; }
+  .text-c { text-align: center; }
+  .text-r { text-align: right; }
+  .muted { color: #8c8c8c; font-size: 12px; }
+
+  /* ============== 港澳题库弹窗字段两列布局 ============== */
+  .form-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 16px; }
+  .form-row .field { display: flex; flex-direction: column; gap: 4px; }
+  .form-row .field label { font-size: 12px; color: #6b7280; }
+
+  /* 列表行高紧凑 */
+  .ant-table-tbody > tr > td { padding: 8px 12px !important; }
+
+  /* 分页器 */
+  .pager-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0 0;
+  }
+  .pager-row .pager-info { color: #6b7280; font-size: 12px; }
+
+  /* kd-pop popup */
+  .kd-mask {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1100;
+    display: none; align-items: center; justify-content: center;
+  }
+  .kd-mask.show { display: flex; }
+  .kd-pop {
+    background: #fff; border-radius: 6px; width: 480px; max-height: 70vh;
+    display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  }
+  .kd-pop .pop-hd {
+    padding: 14px 16px; border-bottom: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .kd-pop .pop-hd h3 { margin: 0; font-size: 15px; }
+  .kd-pop .pop-search { padding: 10px 16px; border-bottom: 1px solid #f5f5f5; }
+  .kd-pop .pop-list { flex: 1; overflow-y: auto; padding: 6px 0; }
+  .kd-pop .pop-item {
+    padding: 8px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px;
+  }
+  .kd-pop .pop-item:hover { background: #f5f5f5; }
+  .kd-pop .pop-item .name { flex: 1; font-size: 13px; }
+  .kd-pop .pop-item .desc { color: #8c8c8c; font-size: 12px; }
+  .kd-pop .pop-ft {
+    padding: 10px 16px; border-top: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .kd-pop .pop-ft .count { color: #6b7280; font-size: 12px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============== 顶栏 ============== -->
+  <div class="topbar">
+    <div class="logo"><i>中</i>中文路 · 运营后台</div>
+    <div class="bread">
+      在线试题管理 /
+      <span class="crumb-cur">{{ currentView === 'tiku' ? '港澳题库' : '考点管理' }}</span>
+    </div>
+    <div class="right">
+      <div class="user-pill"><span class="dot"></span>📍 中国香港/CN HK</div>
+      <a-button type="text" size="small">退出</a-button>
+    </div>
+  </div>
+
+  <div style="display:flex; height: calc(100vh - 56px);">
+
+    <!-- ============== 侧栏 ============== -->
+    <div class="sider">
+      <div v-for="(g,gi) in menuGroups" :key="gi" class="menu-group" :class="{open: g.open}">
+        <div v-if="g.title" class="menu-item" :class="{active: g.active}" @click="toggleGroup(gi)">
+          <i class="icon">{{ g.icon }}</i>{{ g.title }}<i class="arrow" v-if="g.subitems">▾</i>
+        </div>
+        <div v-if="g.subitems" class="submenu">
+          <div v-for="s in g.subitems" :key="s.label"
+               class="sub-item"
+               :class="{active: currentView === s.view && s.view}"
+               @click="s.view && switchView(s.view)">
+            <span>
+              <span v-if="s.isNew" class="new-badge">NEW</span>{{ s.label }}
+            </span>
+            <span class="click-hint" v-if="s.view">查看</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== 主区 ============== -->
+    <div class="main">
+
+      <!-- ================== 港澳题库视图 ================== -->
+      <div v-show="currentView === 'tiku'">
+
+        <div class="callout">
+          <div class="icon-dot">!</div>
+          <div>
+            本视图模拟「港澳题库」列表页 + 添加试题弹窗，演示<strong>「考点」字段</strong>如何接入既有页面。<strong>红色虚框 / 红色 NEW 角标</strong>区域为本次新增的内容点，与原系统样式保持一致。
+            <div class="legend">
+              <span class="new-badge">NEW</span>
+              <span>表示本次新增的内容点（红色虚框 / 红色角标）</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 筛选 -->
+        <div class="card">
+          <div class="form-row">
+            <div class="field">
+              <label>标题</label>
+              <a-input v-model:value="tikuFilter.title" placeholder="请输入标题关键词" />
+            </div>
+            <div class="field">
+              <label>题型</label>
+              <a-select v-model:value="tikuFilter.qtype" :options="qTypeOpts" placeholder="请选择" />
+            </div>
+            <div class="field">
+              <label>序号</label>
+              <a-input v-model:value="tikuFilter.serial" placeholder="请输入" />
+            </div>
+            <div class="field">
+              <label>适用范围</label>
+              <a-select v-model:value="tikuFilter.scope" :options="scopeOpts" placeholder="请选择" />
+            </div>
+            <div class="field">
+              <label>更新时间</label>
+              <a-range-picker v-model:value="tikuFilter.dateRange" />
+            </div>
+            <div class="field">
+              <label>创建人</label>
+              <a-select v-model:value="tikuFilter.creator" :options="creatorOpts" placeholder="请选择创建人" />
+            </div>
+            <div class="field">
+              <label>标签</label>
+              <a-select v-model:value="tikuFilter.tags" mode="multiple" :options="tagOpts" placeholder="请选择标签" />
+            </div>
+            <div class="field">
+              <label>类型</label>
+              <a-select v-model:value="tikuFilter.qcat" :options="qCatOpts" placeholder="请选择" />
+            </div>
+            <div class="field">
+              <label>审核状态</label>
+              <a-select v-model:value="tikuFilter.audit" :options="auditOpts" placeholder="请选择" />
+            </div>
+            <div class="field new-field">
+              <label>考点</label>
+              <div class="picker-trigger" @click="openKDPop('filter', $event)">
+                <span v-if="kdFilterSel.size === 0" class="empty">选择考点</span>
+                <span v-for="id in [...kdFilterSel]" :key="id" class="chip">
+                  {{ getKDName(id) }}<span class="x" @click.stop="toggleKDFilter(id)">×</span>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:12px; display:flex; gap:8px;">
+            <a-button type="primary">🔍 查询</a-button>
+            <a-button @click="resetTikuFilter">重置</a-button>
+          </div>
+        </div>
+
+        <!-- 列表 -->
+        <div class="card">
+          <div class="card-hd">
+            <a-button type="primary" @click="openTikuEdit()">＋ 新增试题</a-button>
+          </div>
+          <a-table
+            :columns="tikuCols"
+            :data-source="tikuList"
+            :pagination="false"
+            row-key="id"
+            size="small"
+          >
+            <template #bodyCell="{ column, record }">
+              <template v-if="column.dataIndex === 'title'">
+                <a style="color:#1890ff;">{{ record.title }}</a>
+              </template>
+              <template v-else-if="column.dataIndex === 'tags'">
+                <span v-if="record.tags && record.tags.length">
+                  <span v-for="t in record.tags" :key="t" class="chip" style="margin-right:4px;">{{ t }}</span>
+                </span>
+                <span v-else class="muted">—</span>
+              </template>
+              <template v-else-if="column.dataIndex === 'kaodian'">
+                <span v-if="record.kaodian && record.kaodian.length">
+                  <a-tag v-for="k in record.kaodian" :key="k.id" color="blue">{{ k.name }}</a-tag>
+                </span>
+                <span v-else class="muted">— 未挂载 —</span>
+              </template>
+              <template v-else-if="column.dataIndex === 'audit'">
+                <a-tag color="green">{{ record.audit }}</a-tag>
+              </template>
+            </template>
+          </a-table>
+          <div class="pager-row">
+            <span class="pager-info">共 {{ tikuList.length }} 条</span>
+            <a-pagination
+              :current="1" :total="tikuList.length" :pageSize="10"
+              :show-size-changer="true" :page-size-options="['10 条/页','20 条/页']"
+              size="small"
+            />
+          </div>
+        </div>
+
+        <!-- 港澳题库 · 编辑弹窗 -->
+        <a-drawer
+          v-model:open="tikuEditVisible"
+          :title="tikuEditing ? '编辑试题' : '新增试题'"
+          :width="720"
+          :footer-style="{textAlign:'right'}"
+        >
+          <div class="form-row">
+            <div class="field"><label>标题</label><a-input v-model:value="tikuForm.title" placeholder="如：普通话声调练习" /></div>
+            <div class="field"><label>题型</label>
+              <a-select v-model:value="tikuForm.qtype" :options="qTypeOpts" placeholder="请选择" />
+            </div>
+            <div class="field"><label>序号</label><a-input v-model:value="tikuForm.serial" /></div>
+            <div class="field"><label>适用范围</label>
+              <a-select v-model:value="tikuForm.scope" :options="scopeOpts" placeholder="请选择" />
+            </div>
+            <div class="field new-field" style="grid-column: span 2;">
+              <label>考点</label>
+              <div class="picker-trigger" @click="openKDPop('edit', $event)">
+                <span v-if="kdEditSel.size === 0" class="empty">选择考点（可多选）</span>
+                <span v-for="id in [...kdEditSel]" :key="id" class="chip">
+                  {{ getKDName(id) }}<span class="x" @click.stop="toggleKDEdit(id)">×</span>
+                </span>
+              </div>
+              <div class="kd-stat">
+                <span>已选考点：<span class="num">{{ kdEditSel.size }}</span> 个</span>
+                <span class="muted">· 题目数由后端聚合，此处仅维护映射关系</span>
+              </div>
+            </div>
+            <div class="field"><label>试题类型</label>
+              <a-select v-model:value="tikuForm.qcat" :options="qCatOpts" placeholder="请选择" />
+            </div>
+            <div class="field"><label>审核状态</label>
+              <a-select v-model:value="tikuForm.audit" :options="auditOpts" placeholder="请选择" />
+            </div>
+            <div class="field" style="grid-column: span 4;">
+              <label>题干内容</label>
+              <a-textarea v-model:value="tikuForm.content" :rows="4" placeholder="请输入题目内容..." />
+            </div>
+          </div>
+
+          <template #footer>
+            <a-button @click="tikuEditVisible = false">取消</a-button>
+            <a-button type="primary" @click="saveTiku">保存</a-button>
+          </template>
+        </a-drawer>
+      </div>
+
+      <!-- ================== 考点管理视图 ================== -->
+      <div v-show="currentView === 'kaodian'">
+
+        <!-- 顶部工具条 -->
+        <div class="card">
+          <div class="card-hd">
+            <h2 style="display:flex; align-items:center; gap:8px;">
+              考点列表
+              <span class="muted" style="font-weight:normal;">共 {{ kaodianList.length }} 个</span>
+            </h2>
+            <a-button type="primary" @click="openKaodianEdit()">＋ 新增考点</a-button>
+          </div>
+
+          <!-- 表格 -->
+          <a-table
+            :columns="kaodianCols"
+            :data-source="kaodianList"
+            :pagination="false"
+            row-key="id"
+            size="small"
+          >
+            <template #bodyCell="{ column, record }">
+              <template v-if="column.dataIndex === 'name'">
+                <div>
+                  <a style="color:#1890ff; font-weight:500;">{{ record.name }}</a>
+                  <div class="muted">{{ record.pinyinHint }}</div>
+                </div>
+              </template>
+              <template v-else-if="column.dataIndex === 'tagCount'">
+                <a style="color:#1890ff; cursor:pointer;">{{ record.tagCount }}</a>
+              </template>
+              <template v-else-if="column.dataIndex === 'questionCount'">
+                <a style="color:#1890ff; cursor:pointer;">{{ record.questionCount }}</a>
+              </template>
+              <template v-else-if="column.dataIndex === 'status'">
+                <a-tag :color="record.status === 'on' ? 'green' : 'default'">
+                  {{ record.status === 'on' ? '启用' : '停用' }}
+                </a-tag>
+              </template>
+              <template v-else-if="column.dataIndex === 'actions'">
+                <a-button size="small" type="link" @click="openKaodianEdit(record)">编辑</a-button>
+                <a-button size="small" type="link" @click="toggleKDStatus(record)">
+                  {{ record.status === 'on' ? '停用' : '启用' }}
+                </a-button>
+                <a-popconfirm
+                  title="有关联题目，无法直接删除。是否先停用？"
+                  ok-text="停用并关闭"
+                  cancel-text="取消"
+                  @confirm="confirmDelete(record)"
+                >
+                  <a-button size="small" type="link" danger>删除</a-button>
+                </a-popconfirm>
+              </template>
+            </template>
+          </a-table>
+
+          <div class="pager-row">
+            <span class="pager-info">共 {{ kaodianList.length }} 条</span>
+            <a-pagination :current="1" :total="kaodianList.length" :pageSize="10"
+              :show-size-changer="true" :page-size-options="['10 条/页','20 条/页']" size="small" />
+          </div>
+        </div>
+
+        <!-- 考点编辑抽屉 -->
+        <a-drawer
+          v-model:open="kaodianEditVisible"
+          :title="kaodianEditing ? '编辑考点' : '新增考点'"
+          :width="640"
+          :footer-style="{textAlign:'right'}"
+        >
+          <div class="form-section">
+            <h3>基本信息</h3>
+            <div class="form-row">
+              <div class="field" style="grid-column: span 2;">
+                <label style="color:#ff4d4f;">* 考点名称</label>
+                <a-input v-model:value="kdForm.name" placeholder="如：平翘舌、前后鼻音、声调变调..." />
+              </div>
+              <div class="field">
+                <label>状态</label>
+                <a-switch v-model:checked="kdForm.statusOn" checked-children="启用" un-checked-children="停用" />
+              </div>
+              <div class="field" style="grid-column: span 4;">
+                <label>备注（可选）</label>
+                <a-textarea v-model:value="kdForm.note" :rows="3" placeholder="用于描述考点的考查范围与难度，便于运营对齐" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>关联标签</h3>
+            <div class="toolbar">
+              <a-input-search class="search-box" v-model:value="tagKw" placeholder="搜索标签名称..." />
+              <a-button @click="expandAll(true)">展开</a-button>
+              <a-button @click="expandAll(false)">收起</a-button>
+              <a-button @click="selectedTags.clear(); renderTree()">清空</a-button>
+              <a-button type="primary" @click="selectAllInScope">全选当前展开</a-button>
+            </div>
+            <div class="tag-tree">
+              <div v-for="node in tagTreeRendered" :key="node.path">
+                <div class="node" :class="{selected: selectedTags.has(node.path)}"
+                     :style="{paddingLeft: (12 + node.depth*20) + 'px'}">
+                  <span class="twisty" @click="toggleExpand(node.path)">
+                    {{ expanded.has(node.path) ? '▾' : (node.hasChildren ? '▸' : '·') }}
+                  </span>
+                  <input type="checkbox"
+                         :checked="selectedTags.has(node.path)"
+                         @change="toggleSel(node.path)" />
+                  <span>{{ node.name }}</span>
+                  <span v-if="node.hasChildren" class="muted" style="margin-left:auto;">
+                    {{ countChildrenSelected(node.path) }}/{{ countChildren(node.path) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="selected-bar">
+              <span v-for="path in [...selectedTags]" :key="path" class="chip">
+                {{ path.split(' / ').pop() }}
+                <span class="x" @click="selectedTags.delete(path); renderTree()">×</span>
+              </span>
+            </div>
+
+            <div class="preview">
+              已选标签：<span class="num">{{ selectedTags.size }}</span> 个
+              <span class="muted">· 题目数由后端聚合，此处仅展示标签映射数量</span>
+            </div>
+          </div>
+
+          <template #footer>
+            <a-button @click="kaodianEditVisible = false">取消</a-button>
+            <a-button type="primary" @click="saveKaodian">保存</a-button>
+          </template>
+        </a-drawer>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== 考点选择弹窗（共享） ============== -->
+  <div class="kd-mask" :class="{show: kdPopVisible}" @click.self="kdPopVisible = false">
+    <div class="kd-pop">
+      <div class="pop-hd">
+        <h3>选择考点</h3>
+        <a-button type="text" size="small" @click="kdPopVisible = false">×</a-button>
+      </div>
+      <div class="pop-search">
+        <a-input v-model:value="kdPopKw" placeholder="搜索考点名称..." />
+      </div>
+      <div class="pop-list">
+        <div v-for="k in kaodianListFiltered" :key="k.id" class="pop-item" @click="toggleKDInPop(k.id)">
+          <a-checkbox :checked="kdPopSelected.has(k.id)" @click.stop="toggleKDInPop(k.id)" />
+          <span class="name">{{ k.name }}</span>
+          <span class="desc">{{ k.questionCount }} 题</span>
+        </div>
+      </div>
+      <div class="pop-ft">
+        <span class="count">已选 {{ kdPopSelected.size }} 个</span>
+        <div>
+          <a-button size="small" @click="kdPopSelected.clear()">清空</a-button>
+          <a-button size="small" @click="kdPopVisible = false">取消</a-button>
+          <a-button size="small" type="primary" @click="confirmKDPop">确定</a-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const { createApp, ref, reactive, computed, watch, onMounted, nextTick } = Vue;
+
+const app = createApp({
+  setup() {
+    // ==================== 菜单 ====================
+    const menuGroups = reactive([
+      { title: '学员评价', icon: '📊' },
+      { title: '教师管理', icon: '👥' },
+      { title: '购课订单', icon: '🛒' },
+      { title: 'APP内容管理', icon: '📱' },
+      { title: '营销推广', icon: '📣' },
+      { title: '财务管理', icon: '💰' },
+      { title: '薪资管理', icon: '💼' },
+      { title: '来华留学', icon: '🌐' },
+      { title: 'HSKK线索', icon: '🔍' },
+      { title: '在线网校', icon: '🎓' },
+      { title: 'HKPSC', icon: '📋' },
+      { title: '在线试题管理', icon: '📝', open: true, subitems: [
+        { label: '港澳题库', view: 'tiku', isNew: true },
+        { label: '港澳试卷' },
+        { label: '题库管理' },
+        { label: '海外题库' },
+        { label: '海外试卷' },
+        { label: '测试报告' },
+        { label: 'HSKK 题目列表' },
+        { label: '线下水平测试' },
+        { label: '考点管理', view: 'kaodian', isNew: true },
+      ]}
+    ]);
+    function toggleGroup(i) {
+      menuGroups[i].open = !menuGroups[i].open;
+    }
+
+    // ==================== 视图切换 ====================
+    const currentView = ref('tiku');
+    function switchView(v) { currentView.value = v; }
+
+    // ==================== 通用下拉数据 ====================
+    const qTypeOpts = [
+      { value: '单选', label: '单选题' },
+      { value: '多选', label: '多选题' },
+      { value: '填空', label: '填空题' },
+    ];
+    const scopeOpts = [
+      { value: 'P1', label: '香港学校/P1' },
+      { value: 'P2', label: '香港学校/P2' },
+      { value: 'P3', label: '香港学校/P3' },
+    ];
+    const creatorOpts = [
+      { value: 'admin', label: '超级管理员' },
+      { value: 'editor', label: '内容运营-小王' },
+    ];
+    const qCatOpts = [
+      { value: '听力', label: '听力题' },
+      { value: '阅读', label: '阅读题' },
+      { value: '写作', label: '写作题' },
+    ];
+    const auditOpts = [
+      { value: '待审核', label: '待审核' },
+      { value: '审核通过', label: '审核通过' },
+      { value: '已驳回', label: '已驳回' },
+    ];
+
+    // ==================== 港澳题库视图 ====================
+    const tikuFilter = reactive({
+      title: '', qtype: undefined, serial: '', scope: undefined,
+      dateRange: [], creator: undefined, tags: [], qcat: undefined, audit: undefined,
+    });
+    const tagOpts = computed(() => {
+      // 从 tagTree 提取所有叶子
+      const out = [];
+      function walk(nodes) {
+        nodes.forEach(n => {
+          if (!n.children || n.children.length === 0) {
+            out.push({ value: n.name, label: n.name });
+          } else {
+            walk(n.children);
+          }
+        });
+      }
+      walk(tagTreeRaw);
+      return out;
+    });
+
+    function resetTikuFilter() {
+      Object.assign(tikuFilter, {
+        title: '', qtype: undefined, serial: '', scope: undefined,
+        dateRange: [], creator: undefined, tags: [], qcat: undefined, audit: undefined,
+      });
+      kdFilterSel.clear();
+    }
+
+    const tikuList = reactive([
+      { id: 1, title: '特區政府今日在政府總部舉行《教育強國建設規劃綱要（2024-20...）', serial: '—', qcat: '—', qtype: '单选', score: 5, scope: '香港学校/P1', tags: [], kaodian: [], creator: '超级管理员', audit: '审核通过', createdAt: '2026-09-26 17:33:51' },
+      { id: 2, title: '內地同仁提及他們的學校正處於「九年義務教育」階段...', serial: '—', qcat: '—', qtype: '单选', score: 1, scope: '香港学校/P1', tags: [], kaodian: [], creator: '超级管理员', audit: '审核通过', createdAt: '2026-09-26 17:01:19' },
+      { id: 3, title: '內地同仁在帶領香港校長參觀校園時，常常自豪地展示「智慧課堂」...', serial: '—', qcat: '—', qtype: '单选', score: 1, scope: '香港学校/P1', tags: [], kaodian: [], creator: '超级管理员', audit: '审核通过', createdAt: '2026-09-26 16:59:48' },
+      { id: 4, title: '在與內地同行交流時，如果您想介紹香港學校非常重視的「全方位...', serial: '—', qcat: '—', qtype: '单选', score: 1, scope: '香港学校/P1', tags: [], kaodian: [], creator: '超级管理员', audit: '审核通过', createdAt: '2026-09-26 16:58:39' },
+      { id: 5, title: '當您到內地參加教育會議時，內地記者問及香港學校在為學生「減負...', serial: '—', qcat: '—', qtype: '单选', score: 1, scope: '香港学校/P1', tags: [], kaodian: [], creator: '超级管理员', audit: '审核通过', createdAt: '2026-09-26 16:57:49' },
+    ]);
+    const tikuCols = [
+      { title: '试题标题', dataIndex: 'title', ellipsis: true },
+      { title: '序号', dataIndex: 'serial', width: 60, align: 'center' },
+      { title: '类型', dataIndex: 'qcat', width: 70, align: 'center' },
+      { title: '题型', dataIndex: 'qtype', width: 70, align: 'center' },
+      { title: '分值', dataIndex: 'score', width: 60, align: 'center' },
+      { title: '适用范围', dataIndex: 'scope', width: 110 },
+      { title: '标签', dataIndex: 'tags', width: 140 },
+      { title: '考点', dataIndex: 'kaodian', width: 140, className: 'td-new' },
+      { title: '创建人', dataIndex: 'creator', width: 100 },
+      { title: '审核状态', dataIndex: 'audit', width: 90, align: 'center' },
+      { title: '创建时间', dataIndex: 'createdAt', width: 140 },
+    ];
+
+    const tikuEditVisible = ref(false);
+    const tikuEditing = ref(null);
+    const tikuForm = reactive({ title: '', qtype: undefined, serial: '', scope: undefined, qcat: undefined, audit: undefined, content: '' });
+    function openTikuEdit(row) {
+      tikuEditing.value = row || null;
+      Object.assign(tikuForm, row || { title: '', qtype: undefined, serial: '', scope: undefined, qcat: undefined, audit: undefined, content: '' });
+      tikuEditVisible.value = true;
+    }
+    function saveTiku() {
+      $message.success(tikuEditing.value ? '已保存试题' : '已新增试题');
+      tikuEditVisible.value = false;
+    }
+
+    // ==================== 考点管理视图 ====================
+    const kaodianList = reactive([
+      { id: 1, name: '平翘舌', pinyinHint: 'zh/ch/sh/r 与 z/c/s 的发音辨析', tagCount: 6, questionCount: 326, status: 'on', creator: '超级管理员', createdAt: '2026-09-12 10:24:38' },
+      { id: 2, name: '前后鼻音', pinyinHint: 'an/en/in/un/ün 与 ang/eng/ing/ong', tagCount: 9, questionCount: 218, status: 'on', creator: '超级管理员', createdAt: '2026-09-08 14:02:11' },
+      { id: 3, name: '人名拼写规则', pinyinHint: '姓名拼写中的大小写、连字符、隔音符号', tagCount: 5, questionCount: 142, status: 'on', creator: '内容运营-小王', createdAt: '2026-09-05 09:33:50' },
+      { id: 4, name: '地名拼写规则', pinyinHint: '地名拼写，专名缩写、地理通名大小写', tagCount: 4, questionCount: 87, status: 'off', creator: '内容运营-小王', createdAt: '2026-08-30 16:48:25' },
+      { id: 5, name: '声调变调', pinyinHint: '上声变调、一/不变调、叠字变调', tagCount: 7, questionCount: 198, status: 'on', creator: '超级管理员', createdAt: '2026-08-26 11:17:09' },
+    ]);
+    const kaodianCols = [
+      { title: '考点名称', dataIndex: 'name', width: 240 },
+      { title: '关联标签', dataIndex: 'tagCount', width: 100, align: 'center' },
+      { title: '关联题目', dataIndex: 'questionCount', width: 100, align: 'center' },
+      { title: '状态', dataIndex: 'status', width: 80, align: 'center' },
+      { title: '创建人', dataIndex: 'creator', width: 110 },
+      { title: '创建时间', dataIndex: 'createdAt', width: 150 },
+      { title: '操作', dataIndex: 'actions', width: 200, align: 'center' },
+    ];
+
+    function toggleKDStatus(row) {
+      row.status = row.status === 'on' ? 'off' : 'on';
+      $message.success(row.status === 'on' ? '已恢复启用' : '已停用，关联数据保留');
+    }
+    function confirmDelete(row) {
+      row.status = 'off';
+      $message.warning('该考点有 ' + row.questionCount + ' 道题目关联，无法直接删除，已停用保留数据');
+    }
+
+    const kaodianEditVisible = ref(false);
+    const kaodianEditing = ref(null);
+    const kdForm = reactive({ name: '', statusOn: true, note: '' });
+    function openKaodianEdit(row) {
+      kaodianEditing.value = row || null;
+      Object.assign(kdForm, row ? {
+        name: row.name, statusOn: row.status === 'on', note: row.note || '',
+      } : { name: '', statusOn: true, note: '' });
+      selectedTags.clear();
+      expanded.clear();
+      if (row && row.tags) row.tags.forEach(t => {
+        selectedTags.add(t);
+        const parts = t.split(' / ');
+        let cur = '';
+        for (let i = 0; i < parts.length - 1; i++) {
+          cur = cur ? cur + ' / ' + parts[i] : parts[i];
+          expanded.add(cur);
+        }
+      });
+      renderTree();
+      kaodianEditVisible.value = true;
+    }
+    function saveKaodian() {
+      $message.success(kaodianEditing.value ? '已保存考点' : '已新增考点');
+      kaodianEditVisible.value = false;
+    }
+
+    // ==================== 标签树 ====================
+    const tagTreeRaw = [
+      { name: '拼音标签', children: [
+        { name: '声母', children: [
+          { name: '平翘舌' }, { name: '前后鼻音' }, { name: '边鼻音' }
+        ]},
+        { name: '韵母' },
+        { name: '声调', children: [
+          { name: '声调变调' }, { name: '轻声' }
+        ]}
+      ]},
+      { name: '拼写规则', children: [
+        { name: '人名拼写规则' }, { name: '地名拼写规则' }
+      ]},
+      { name: '汉字文化' }
+    ];
+    const tagKw = ref('');
+    const expanded = reactive(new Set());
+    const selectedTags = reactive(new Set());
+    const tagTreeRendered = ref([]);
+    function renderTree() {
+      const list = [];
+      const kw = tagKw.value.trim().toLowerCase();
+      function walk(nodes, parentPath, depth) {
+        nodes.forEach(n => {
+          const path = parentPath ? parentPath + ' / ' + n.name : n.name;
+          const show = !kw || path.toLowerCase().includes(kw);
+          if (show) {
+            list.push({ path, name: n.name, depth, hasChildren: !!(n.children && n.children.length) });
+          }
+          if ((expanded.has(path) || kw) && n.children) {
+            walk(n.children, path, depth + 1);
+          }
+        });
+      }
+      walk(tagTreeRaw, '', 0);
+      tagTreeRendered.value = list;
+    }
+    function toggleExpand(path) { expanded.has(path) ? expanded.delete(path) : expanded.add(path); renderTree(); }
+    function toggleSel(path) {
+      selectedTags.has(path) ? selectedTags.delete(path) : selectedTags.add(path);
+      renderTree();
+    }
+    function expandAll(open) {
+      function walk(nodes, parentPath) {
+        nodes.forEach(n => {
+          const path = parentPath ? parentPath + ' / ' + n.name : n.name;
+          if (open) expanded.add(path); else expanded.delete(path);
+          if (n.children) walk(n.children, path);
+        });
+      }
+      walk(tagTreeRaw, '');
+      renderTree();
+    }
+    function selectAllInScope() {
+      tagTreeRendered.value.forEach(n => {
+        if (n.hasChildren) return;
+        selectedTags.add(n.path);
+      });
+      renderTree();
+    }
+    function countChildren(path) {
+      function find(nodes) {
+        for (const n of nodes) {
+          const p = nodes === tagTreeRaw ? n.name : (arguments[1] || '') + ' / ' + n.name;
+          if (p === path) return n;
+        }
+        return null;
+      }
+      const node = findNode(tagTreeRaw, '', path);
+      if (!node || !node.children) return 0;
+      return node.children.reduce((s, c) => s + (c.children ? countChildrenTree(c) : 1), 0);
+    }
+    function countChildrenTree(node) {
+      if (!node.children) return 1;
+      return node.children.reduce((s, c) => s + countChildrenTree(c), 0);
+    }
+    function findNode(nodes, parentPath, target) {
+      for (const n of nodes) {
+        const path = parentPath ? parentPath + ' / ' + n.name : n.name;
+        if (path === target) return n;
+        if (n.children) {
+          const f = findNode(n.children, path, target);
+          if (f) return f;
+        }
+      }
+      return null;
+    }
+    function countChildrenSelected(path) {
+      const node = findNode(tagTreeRaw, '', path);
+      if (!node || !node.children) return 0;
+      let s = 0;
+      function walk(n, p) {
+        const full = p ? p + ' / ' + n.name : n.name;
+        if (selectedTags.has(full)) s++;
+        if (n.children) n.children.forEach(c => walk(c, full));
+      }
+      node.children.forEach(c => walk(c, path));
+      return s;
+    }
+    renderTree();
+
+    // ==================== 考点选择弹窗 ====================
+    const kdPopVisible = ref(false);
+    const kdPopKw = ref('');
+    const kdPopTarget = ref('filter');
+    const kdPopSelected = reactive(new Set());
+    const kdFilterSel = reactive(new Set());
+    const kdEditSel = reactive(new Set());
+
+    const kaodianListFiltered = computed(() => {
+      const kw = kdPopKw.value.trim().toLowerCase();
+      return kaodianList.filter(k => !kw || k.name.toLowerCase().includes(kw));
+    });
+    function getKDName(id) {
+      const k = kaodianList.find(x => x.id === id);
+      return k ? k.name : '';
+    }
+    function openKDPop(target) {
+      kdPopTarget.value = target;
+      kdPopSelected.clear();
+      const src = target === 'edit' ? kdEditSel : kdFilterSel;
+      src.forEach(id => kdPopSelected.add(id));
+      kdPopVisible.value = true;
+    }
+    function toggleKDFilter(id) { kdFilterSel.has(id) ? kdFilterSel.delete(id) : kdFilterSel.add(id); }
+    function toggleKDEdit(id) { kdEditSel.has(id) ? kdEditSel.delete(id) : kdEditSel.add(id); }
+    function toggleKDInPop(id) { kdPopSelected.has(id) ? kdPopSelected.delete(id) : kdPopSelected.add(id); }
+    function confirmKDPop() {
+      const dst = kdPopTarget.value === 'edit' ? kdEditSel : kdFilterSel;
+      dst.clear();
+      kdPopSelected.forEach(id => dst.add(id));
+      kdPopVisible.value = false;
+      $message.success('已保存考点关联');
+    }
+
+    return {
+      menuGroups, toggleGroup, currentView, switchView,
+      qTypeOpts, scopeOpts, creatorOpts, qCatOpts, auditOpts, tagOpts,
+      tikuFilter, tikuList, tikuCols, resetTikuFilter,
+      tikuEditVisible, tikuEditing, tikuForm, openTikuEdit, saveTiku,
+      kaodianList, kaodianCols, toggleKDStatus, confirmDelete,
+      kaodianEditVisible, kaodianEditing, kdForm, openKaodianEdit, saveKaodian,
+      tagKw, expanded, selectedTags, tagTreeRendered,
+      renderTree, toggleExpand, toggleSel, expandAll, selectAllInScope,
+      countChildren, countChildrenSelected,
+      kdPopVisible, kdPopKw, kdPopTarget, kdPopSelected,
+      kdFilterSel, kdEditSel, kaodianListFiltered, getKDName,
+      openKDPop, toggleKDFilter, toggleKDEdit, toggleKDInPop, confirmKDPop,
+    };
+  }
+});
+
+// AntD Vue plugin & message API
+// 等待 antd 通过 ESM 加载完成
+if (window.__antdReady) {
+  app.use(antd);
+  app.mount('#app');
+} else {
+  window.addEventListener('antd-ready', () => {
+    app.use(antd);
+    app.mount('#app');
+  });
+}
+
+// 全局消息工具（Vue 模板里直接用）
+function setupMsg() {
+  window.$message = {
+    success(msg) { antd.message.success(msg); },
+    warning(msg) { antd.message.warning(msg); },
+    error(msg) { antd.message.error(msg); },
+    info(msg) { antd.message.info(msg); }
+  };
+}
+if (window.__antdReady) setupMsg();
+else window.addEventListener('antd-ready', setupMsg);
+</script>
+</body>
+</html>
