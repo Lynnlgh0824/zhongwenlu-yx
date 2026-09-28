@@ -97,6 +97,8 @@
   .surface-tabs button.active { color:#1890ff; border-bottom-color:#1890ff; font-weight:600; }
   .app-preview { flex:1; background:#eef1f7; padding:0; min-width:380px; }
   .app-preview iframe { display:block; width:100%; height:100%; min-height:calc(100vh - 56px); border:0; background:#f7f8fc; }
+  .app-mode .sider, .topbar.app-mode-bar .bread, .topbar.app-mode-bar .right { display:none; }
+  .topbar.app-mode-bar .surface-tabs { margin-left:auto; }
 
   /* ============== 卡片 ============== */
   .card {
@@ -277,10 +279,10 @@
 </style>
 </head>
 <body>
-<div id="app">
+<div id="app" :class="{'app-mode': currentSurface === 'app'}">
 
   <!-- ============== 顶栏 ============== -->
-  <div class="topbar">
+  <div class="topbar" :class="{'app-mode-bar': currentSurface === 'app'}">
     <div class="logo"><i>中</i>中文路 · 运营后台</div>
     <div class="bread">
       在线试题管理 /
@@ -296,7 +298,7 @@
     </div>
   </div>
 
-  <div style="display:flex; height: calc(100vh - 56px);">
+  <div :class="{'app-mode': currentSurface === 'app'}" style="display:flex; height: calc(100vh - 56px);">
 
     <!-- ============== 侧栏 ============== -->
     <div class="sider">
