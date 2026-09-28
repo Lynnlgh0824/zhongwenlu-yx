@@ -6,10 +6,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <!-- Vue 3 (UMD, 全局变量) -->
 <script src="https://unpkg.com/vue@3.4.27/dist/vue.global.prod.js"></script>
-<!-- Ant Design Vue 2 UMD：预览器对传统 CDN 脚本兼容性更好 -->
+<!-- Ant Design Vue 2 (使用 esm.sh 解决 UMD 兼容问题) -->
 <link rel="stylesheet" href="https://unpkg.com/ant-design-vue@2.2.6/dist/antd.min.css">
-<script src="https://unpkg.com/moment@2.30.1/min/moment.min.js"></script>
-<script src="https://unpkg.com/ant-design-vue@2.2.6/dist/antd.min.js"></script>
+<script type="module">
+  // 把 AntD Vue 挂到 window 上供传统 <script> 使用
+  import antd from 'https://esm.sh/ant-design-vue@2.2.6?bundle&deps=vue@3.4.27';
+  import AntdVue from 'https://esm.sh/@ant-design/icons-vue@7.0.1?bundle&deps=vue@3.4.27';
+  window.antd = antd;
+  window.AntdVue = AntdVue;
+  window.__antdReady = true;
+  window.dispatchEvent(new Event('antd-ready'));
+</script>
 <style>
   /* ============== 基础 ============== */
   * { box-sizing: border-box; }
@@ -975,20 +982,28 @@ const app = createApp({
 });
 
 // AntD Vue plugin & message API
-// UMD CDN 同步加载；即使 CDN 暂时不可用也挂载 Vue，避免整页空白。
-if (window.antd) app.use(window.antd);
-app.mount('#app');
+// 等待 antd 通过 ESM 加载完成
+if (window.__antdReady) {
+  app.use(antd);
+  app.mount('#app');
+} else {
+  window.addEventListener('antd-ready', () => {
+    app.use(antd);
+    app.mount('#app');
+  });
+}
 
 // 全局消息工具（Vue 模板里直接用）
 function setupMsg() {
   window.$message = {
-    success(msg) { window.antd && window.antd.message.success(msg); },
-    warning(msg) { window.antd && window.antd.message.warning(msg); },
-    error(msg) { window.antd && window.antd.message.error(msg); },
-    info(msg) { window.antd && window.antd.message.info(msg); }
+    success(msg) { antd.message.success(msg); },
+    warning(msg) { antd.message.warning(msg); },
+    error(msg) { antd.message.error(msg); },
+    info(msg) { antd.message.info(msg); }
   };
 }
-setupMsg();
+if (window.__antdReady) setupMsg();
+else window.addEventListener('antd-ready', setupMsg);
 </script>
 </body>
 </html>
