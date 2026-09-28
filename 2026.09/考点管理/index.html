@@ -426,7 +426,7 @@
 
         <!-- 港澳题库 · 编辑弹窗 -->
         <a-drawer
-          v-model:open="tikuEditVisible"
+              v-model:visible="tikuEditVisible"
           :title="tikuEditing ? '编辑试题' : '新增试题'"
           :width="720"
           :footer-style="{textAlign:'right'}"
@@ -537,7 +537,7 @@
 
         <!-- 考点编辑抽屉 -->
         <a-drawer
-          v-model:open="kaodianEditVisible"
+          v-model:visible="kaodianEditVisible"
           :title="kaodianEditing ? '编辑考点' : '新增考点'"
           :width="640"
           :footer-style="{textAlign:'right'}"
