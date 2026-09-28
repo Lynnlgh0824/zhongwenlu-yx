@@ -72,15 +72,15 @@
             "B端",
             "学校"
           ],
-          "previewUrl": "/kaodianguanli/",
+          "previewUrl": "/2026.09/考点管理/",
           "extras": [
             {
               "label": "港澳题库+考点联动",
-              "url": "/kaodianguanli/#view-tiku"
+              "url": "/2026.09/考点管理/#view-tiku"
             },
             {
               "label": "考点管理后台",
-              "url": "/kaodianguanli/#view-kaodian"
+              "url": "/2026.09/考点管理/#view-kaodian"
             }
           ],
           "branch": "feature/REQ-KAODIAN-GL",
