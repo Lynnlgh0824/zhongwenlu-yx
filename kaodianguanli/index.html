@@ -941,8 +941,8 @@
           <label>考点</label>
           <div class="picker-trigger" id="kdPickerEdit" data-placeholder="选择考点（可多选）" onclick="openKDPicker('edit', this)"></div>
           <div class="kd-stat">
-            <span>命中题目预估：<span class="num">487</span> 道</span>
-            <span class="muted">· 仅展示手工关联，不含自动聚合</span>
+            <span>已选考点：<span class="num" id="kdTagCountTiku">0</span> 个</span>
+            <span class="muted">· 命中题目数后端计算，此处仅维护考点关联</span>
           </div>
         </div>
         <div class="field">
@@ -1110,7 +1110,8 @@
       <div class="selected-bar" id="selectedBar"></div>
 
       <div class="preview" id="hitPreview">
-        预估命中题目：<span class="num" id="hitNum">0</span> 道
+        已选标签：<span class="num" id="hitNum">0</span> 个
+        <span class="muted" style="margin-left:8px;">· 命中题目数后端计算，此处仅展示标签映射数量</span>
       </div>
     </div>
 
@@ -1445,7 +1446,11 @@ function removeSel(pathStr) {
   renderHitPreview();
 }
 function renderHitPreview() {
-  document.getElementById('hitNum').textContent = (selected.size * 32).toLocaleString();
+  document.getElementById('hitNum').textContent = selected.size;
+  const tikuKPCount = document.getElementById('kdTagCountTiku');
+  if (tikuKPCount && typeof kdPopConfirmed !== 'undefined') {
+    tikuKPCount.textContent = kdPopConfirmed.size;
+  }
 }
 
 // ==================== 考点管理 · 编辑抽屉 ====================
@@ -1589,6 +1594,8 @@ function removeKDFromTrigger(target, id, e) {
 function renderPickerTriggers() {
   renderKDTrigger(document.querySelector('[data-placeholder="选择考点"]'), new Set());
   renderKDTrigger(document.getElementById('kdPickerEdit'), kdPopConfirmed);
+  const tikuKPCount = document.getElementById('kdTagCountTiku');
+  if (tikuKPCount) tikuKPCount.textContent = kdPopConfirmed.size;
 }
 function openKDPicker(target, el) {
   kdPopTarget = target;
