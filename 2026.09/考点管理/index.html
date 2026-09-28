@@ -298,8 +298,8 @@
 
   <div class="surface-switch" :class="{'app-mode-switch': currentSurface === 'app'}">
     <div class="surface-tabs" role="tablist" aria-label="原型端">
-      <button :class="{active: currentSurface === 'app'}" @click="currentSurface = 'app'" role="tab">App</button>
       <button :class="{active: currentSurface === 'backend'}" @click="currentSurface = 'backend'" role="tab">后台</button>
+      <button :class="{active: currentSurface === 'app'}" @click="currentSurface = 'app'" role="tab">App</button>
     </div>
   </div>
 
