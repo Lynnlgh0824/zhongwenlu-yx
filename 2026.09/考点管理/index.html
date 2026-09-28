@@ -367,12 +367,8 @@
             </div>
             <div class="field new-field">
               <label>考点</label>
-              <div class="picker-trigger" @click="openKDPop('filter', $event)">
-                <span v-if="kdFilterSel.size === 0" class="empty">选择考点</span>
-                <span v-for="id in [...kdFilterSel]" :key="id" class="chip">
-                  {{ getKDName(id) }}<span class="x" @click.stop="toggleKDFilter(id)">×</span>
-                </span>
-              </div>
+              <a-select v-model:value="kdFilterValues" mode="multiple" show-search option-filter-prop="label"
+                :options="kdOptions" placeholder="选择考点" />
             </div>
           </div>
           <div style="margin-top:12px; display:flex; gap:8px;">
@@ -442,12 +438,8 @@
             </div>
             <div class="field new-field" style="grid-column: span 2;">
               <label>考点</label>
-              <div class="picker-trigger" @click="openKDPop('edit', $event)">
-                <span v-if="kdEditSel.size === 0" class="empty">选择考点（可多选）</span>
-                <span v-for="id in [...kdEditSel]" :key="id" class="chip">
-                  {{ getKDName(id) }}<span class="x" @click.stop="toggleKDEdit(id)">×</span>
-                </span>
-              </div>
+              <a-select v-model:value="kdEditValues" mode="multiple" show-search option-filter-prop="label"
+                :options="kdOptions" placeholder="选择考点（可多选）" />
               <div class="kd-stat">
                 <span>已选考点：<span class="num">{{ kdEditSel.size }}</span> 个</span>
                 <span class="muted">· 题目数由后端聚合，此处仅维护映射关系</span>
@@ -931,6 +923,18 @@ const app = createApp({
     const kdFilterSel = reactive(new Set());
     const kdEditSel = reactive(new Set());
 
+    const kdOptions = computed(() => kaodianList.map(k => ({
+      value: k.id, label: k.name,
+    })));
+    const kdFilterValues = computed({
+      get: () => [...kdFilterSel],
+      set: values => { kdFilterSel.clear(); values.forEach(id => kdFilterSel.add(id)); },
+    });
+    const kdEditValues = computed({
+      get: () => [...kdEditSel],
+      set: values => { kdEditSel.clear(); values.forEach(id => kdEditSel.add(id)); },
+    });
+
     const kaodianListFiltered = computed(() => {
       const kw = kdPopKw.value.trim().toLowerCase();
       return kaodianList.filter(k => !kw || k.name.toLowerCase().includes(kw));
@@ -969,6 +973,7 @@ const app = createApp({
       countChildren, countChildrenSelected,
       kdPopVisible, kdPopKw, kdPopTarget, kdPopSelected,
       kdFilterSel, kdEditSel, kaodianListFiltered, getKDName,
+      kdOptions, kdFilterValues, kdEditValues,
       openKDPop, toggleKDFilter, toggleKDEdit, toggleKDInPop, confirmKDPop,
     };
   }
