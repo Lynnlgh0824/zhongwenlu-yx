@@ -300,14 +300,6 @@
     <span class="close" onclick="document.getElementById('setupBanner').remove()">×</span>
   </div>
 
-  <div class="stats-row" id="statsRow"></div>
-
-  <div class="filter-bar">
-    <span class="lbl">标签：</span>
-    <div id="filterTags" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
-    <span class="filter-clear" onclick="clearFilters()">清除筛选</span>
-  </div>
-
   <div id="timeline"></div>
 
 </main>
@@ -317,18 +309,6 @@
 </footer>
 
 <script>
-const COLORS = {
-  "blue":   { bg: "#dbeafe", fg: "#1d4ed8" },
-  "pink":   { bg: "#fce7f3", fg: "#be185d" },
-  "purple": { bg: "#ede9fe", fg: "#6d28d9" },
-  "cyan":   { bg: "#cffafe", fg: "#0e7490" },
-  "amber":  { bg: "#fef3c7", fg: "#92400e" },
-  "orange": { bg: "#ffedd5", fg: "#c2410c" },
-  "indigo": { bg: "#e0e7ff", fg: "#4338ca" },
-  "green":  { bg: "#d1fae5", fg: "#047857" },
-  "gray":   { bg: "#f3f4f6", fg: "#6b7280" }
-};
-
 const STATUS_LABEL = {
   "in-progress": "开发中",
   "review":      "评审中",
@@ -338,7 +318,6 @@ const STATUS_LABEL = {
 };
 
 let config = null;
-let activeTags = new Set();
 let searchQuery = "";
 
 async function load() {
@@ -348,61 +327,13 @@ async function load() {
 }
 
 function render() {
-  renderStats();
-  renderTags();
   renderTimeline();
   document.getElementById("updatedAt").textContent = config.meta.updatedAt;
-}
-
-function renderStats() {
-  const s = config.stats;
-  const cards = [
-    { cls: "in-progress", label: "进行中", value: s.inProgress },
-    { cls: "review",      label: "评审中", value: s.review },
-    { cls: "delivered",   label: "已交付", value: s.delivered },
-    { cls: "archived",    label: "已归档", value: s.archived }
-  ];
-  document.getElementById("statsRow").innerHTML = cards.map(c => `
-    <div class="stat-card ${c.cls}">
-      <div class="label">${c.label}</div>
-      <div class="value">${c.value}</div>
-    </div>
-  `).join("");
-}
-
-function renderTags() {
-  document.getElementById("filterTags").innerHTML = config.tags.map(t => {
-    const c = COLORS[t.color] || COLORS.gray;
-    const active = activeTags.has(t.id) ? "active" : "";
-    return `<span class="filter-tag ${active}" data-id="${t.id}"
-      style="${active ? `background:${c.bg};color:${c.fg};border-color:${c.bg};` : ''}"
-      onclick="toggleTag('${t.id}')">${t.id}</span>`;
-  }).join("");
-}
-
-function toggleTag(id) {
-  if (activeTags.has(id)) activeTags.delete(id);
-  else activeTags.add(id);
-  renderTags();
-  renderTimeline();
-}
-
-function clearFilters() {
-  activeTags.clear();
-  document.getElementById("search").value = "";
-  searchQuery = "";
-  renderTags();
-  renderTimeline();
 }
 
 function matchesFilter(item) {
   // 临时隐藏的需求不出现在目录或搜索结果中；保留配置便于恢复。
   if (item.hidden === true) return false;
-  // 标签筛选
-  if (activeTags.size > 0) {
-    const hit = item.tags?.some(t => activeTags.has(t));
-    if (!hit) return false;
-  }
   // 搜索
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
@@ -424,7 +355,7 @@ function renderTimeline() {
   if (matchedGroups.length === 0) {
     wrap.innerHTML = `<div class="empty">
       <div class="empty-icon">📭</div>
-      没有匹配的需求。试试调整搜索词或清除标签筛选。
+      没有匹配的需求。试试调整搜索词。
     </div>`;
     return;
   }
