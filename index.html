@@ -385,19 +385,10 @@ function toggleGroup(group) {
 }
 
 function renderCard(item) {
-  const extras = (item.extras || []).filter(e => !e.hidden).map(e =>
-    `<a class="req-link" href="${e.url}" target="_blank">${e.label} ↗</a>`
-  ).join("");
-
   const previewDisabled = !item.previewUrl || item.previewUrl === "#";
   const previewHtml = previewDisabled
     ? `<span class="req-link disabled">原型未上传</span>`
     : `<a class="req-link primary" href="${item.previewUrl}" target="_blank">📐 原型 ↗</a>`;
-
-  const prdDisabled = !item.prdUrl || item.prdUrl === "#";
-  const prdHtml = prdDisabled
-    ? `<span class="req-link disabled">PRD 待补充</span>`
-    : `<a class="req-link" href="${item.prdUrl}" target="_blank">📄 PRD</a>`;
 
   return `
     <div class="req-card status-${item.status}">
@@ -408,8 +399,6 @@ function renderCard(item) {
       <p class="req-subtitle">${item.subtitle || ""}</p>
       <div class="req-actions">
         ${previewHtml}
-        ${prdHtml}
-        ${extras}
       </div>
       <div class="req-meta">
         <span>更新 ${item.updatedAt}</span>
