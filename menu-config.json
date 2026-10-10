@@ -120,7 +120,8 @@
             },
             {
               "label": "AI 分类",
-              "url": "http://a.localhost:4173/mockup-ai-classify.html"
+              "url": "http://a.localhost:4173/mockup-ai-classify.html",
+              "hidden": true
             }
           ],
           "branch": "explore/REQ-001-batch-import",

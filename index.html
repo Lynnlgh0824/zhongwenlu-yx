@@ -165,6 +165,8 @@
     display: flex; align-items: center; gap: 8px;
     margin-bottom: 8px; font-size: 12px;
   }
+  .req-card-head .req-title { margin: 0; flex: 1; min-width: 0; }
+  .req-card-head .req-status { flex-shrink: 0; }
   .req-id {
     font-family: "SF Mono", Consolas, monospace;
     color: #6b7280;
@@ -452,13 +454,7 @@ function toggleGroup(group) {
 }
 
 function renderCard(item) {
-  const tags = (item.tags || []).map(tid => {
-    const tdef = config.tags.find(t => t.id === tid);
-    const cls = tdef ? `color-${tdef.color}` : "";
-    return `<span class="tag ${cls}">${tid}</span>`;
-  }).join("");
-
-  const extras = (item.extras || []).map(e =>
+  const extras = (item.extras || []).filter(e => !e.hidden).map(e =>
     `<a class="req-link" href="${e.url}" target="_blank">${e.label} ↗</a>`
   ).join("");
 
@@ -475,20 +471,16 @@ function renderCard(item) {
   return `
     <div class="req-card status-${item.status}">
       <div class="req-card-head">
-        <span class="req-id">${item.id}</span>
-        <span class="req-version">${item.version}</span>
+        <h3 class="req-title">${item.title}</h3>
         <span class="req-status ${item.status}">${STATUS_LABEL[item.status] || item.status}</span>
       </div>
-      <h3 class="req-title">${item.title}</h3>
       <p class="req-subtitle">${item.subtitle || ""}</p>
-      <div class="req-tags">${tags}</div>
       <div class="req-actions">
         ${previewHtml}
         ${prdHtml}
         ${extras}
       </div>
       <div class="req-meta">
-        ${item.branch ? `<span>分支 <code>${item.branch}</code></span>` : ""}
         <span>更新 ${item.updatedAt}</span>
       </div>
     </div>
