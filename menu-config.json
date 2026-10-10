@@ -140,7 +140,8 @@
           "previewUrl": "#",
           "extras": [],
           "branch": "feature/REQ-VIP-001-v0.1",
-          "updatedAt": "2026-09-17"
+          "updatedAt": "2026-09-17",
+          "hidden": true
         },
         {
           "id": "REQ-002",
@@ -156,7 +157,8 @@
           "previewUrl": "http://a.localhost:4173/mockup-ai-classify.html",
           "extras": [],
           "branch": "explore/REQ-AI-classify",
-          "updatedAt": "2026-09-24"
+          "updatedAt": "2026-09-24",
+          "hidden": true
         },
         {
           "id": "REQ-003",
@@ -172,7 +174,8 @@
           "previewUrl": "#",
           "extras": [],
           "branch": "",
-          "updatedAt": "2026-09-10"
+          "updatedAt": "2026-09-10",
+          "hidden": true
         }
       ]
     },
@@ -198,7 +201,8 @@
           "extras": [],
           "branch": "main",
           "deliveredAt": "2026-08-15",
-          "updatedAt": "2026-08-15"
+          "updatedAt": "2026-08-15",
+          "hidden": true
         }
       ]
     }

@@ -394,6 +394,8 @@ function clearFilters() {
 }
 
 function matchesFilter(item) {
+  // 临时隐藏的需求不出现在目录或搜索结果中；保留配置便于恢复。
+  if (item.hidden === true) return false;
   // 标签筛选
   if (activeTags.size > 0) {
     const hit = item.tags?.some(t => activeTags.has(t));
